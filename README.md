@@ -1,77 +1,87 @@
-# Description
+# Xcode
 
-This project is created to simplify the intercommunication of the rocket hardware and the groundstation. This project uses a xml format called xcm (derived from the xtce format used by ESA) to describe the data that is transmitted over the RF link to and from the rocket hardware.
-This project can generate C code from the xcm document to send and receive data over the RF link. This c code can than be used in the µC software for the rocket hardware and ensures that the c structures are always synchronized with the xcm document that describes those messages.
-
-In addition to that this project also contains code to receive those messages over an udp link and parse them to json code for further processing. This parser also contains the methods to transform the raw data messages sent by the hardware to easy to read json values that can be used in guis without further processing or having to know the implementation details of the RF link or messages that are transmitted over this link.
-
-# Projects
+This project aims to unify the communication interface between embedded systems and computer. This project uses a xml format called xcm (derived from the xtce format used by ESA) to describe the data that is transmitted over the RF link to and from the rocket hardware.
+To reach this goal the programs in this project can generate C++ (C++ 17) code which is suitable for deployment on baremetal systems and this repository contains a C# programm which can directly parse such a datastream using the xcm document.
 
 ## libxcm
 
 This library performs the task to read and parse the xcm document. It contains the classes that represent the xcm structure as well as an tokenizer to create a C# class structure that represents the xcm document
 
-|               |               |
-| ------------- |:-------------:|
-| Language      | C#            |
-| IDE           | Visual Studio |
+|          |               |
+| -------- | :-----------: |
+| Language |      C#       |
+| IDE      | Visual Studio |
 
 ## libxcmparse
 
 This library contains the code to parse incomming messages in the context of the xcm document. It uses the class structure of libxcm and extends it to handle and parse messages.
 
-|               |               |
-| ------------- |:-------------:|
-| Language      | C#            |
-| IDE           | Visual Studio |
+|          |               |
+| -------- | :-----------: |
+| Language |      C#       |
+| IDE      | Visual Studio |
 
 ## xcmparser
 
-This program allows to parse messages and converting them into a valid json representation. It uses the classes from libxcmparse and feeds them with data over an udp link. It then generates the json and writes it to the cli.
+This program allows to parse messages and converting them into a valid json representation. It uses the classes from libxcmparse and feeds them with data over an custom pipe. It then formats the data as json and outputs it to the outputinterface udp server, or directly to the CLI if the verbose option is used.
 
-|               |               |
-| ------------- |:-------------:|
-| Language      | C#            |
-| IDE           | Visual Studio |
+|          |               |
+| -------- | :-----------: |
+| Language |      C#       |
+| IDE      | Visual Studio |
 
 ### Commandline Options
 
-Currently not available so all ports and adresses are hardcoded in the source code.
+Example xcmparser -f test.xcm -p "serial:/dev/ttyUSB:115200|smp" -v --enableinterface
+
+ > -f, --xcmfile            Required. The xcm file with the package definitions
+>
+ > -p, --pipe               Required. The pipe expression on how to receive the data
+>
+ > -o, --outputinterface    (Default: 127.0.0.1:9000) Interface definition for the output UDP Server eg: 127.0.0.1:9000
+>
+ > -v, --verbose            Enables console data output
+>
+ > --noforward              Disables the json output except console output
+>
+ > --enableinterface        Enables a basic text interface that can be opened by pressing the t key in the console window
+>
+ > --help                   Display this help screen.
+>
+ > --version                Display version information.
+
+ The pipe expression defines a way to setup a decoding pipline for the downstream interface. The stages are separted by '|' and options within a stage are seperated using ':'.
+ The pipeline must always start with a interface. Possible interfaces are
+
+* serial or serialport - This represents a basic connection over a VCP or com port. The syntax is serial:PortName:Baudrate:Parity:Databits:StopBits. The options are a one to one match to the C# serial port class.
+* udpreceiver - Used to send and receive udp packets. udpreceiver:LocalEndpointIP:LocalEndpointPort:RemoteEndpointIP:RemoteEndpointPort:SendHearbeat. The last parameter is a boolean indicating that the udpreceiver should send heartbeat packets. If this is set, the transmission is in a protocol which is compatible to the udpserver protocol from libconnection.
+
+After the interface one ore more decoders can be chained together. Possible options are:
+
+* smp - To use libsmp decoding on the datastream
 
 ## xcodegen
 
 This program generates the C code from the xcm document. It uses the class structure of libxcm and convert it into C structures and interface code to send those messages over a datalink.
 
-|               |               |
-| ------------- |:-------------:|
-| Language      | C#            |
-| IDE           | Visual Studio |
+|          |               |
+| -------- | :-----------: |
+| Language |      C#       |
+| IDE      | Visual Studio |
 
 ### Commandline Options
 
-`dotnet xcodegen.dll [switches] {Path to xcm file} {filename for the generated c code}`
 
-| Switch        |  Funciton                                                 | Optional |
-| ------------- |:---------------------------------------------------------:|:--------:|
-|-h             | show help                                                 | Yes      |
-| --ctemplate   | The c template file to use                                | No       |
-| --htemplate   | The c header template file to use                         | No       |
-|  --outputpath | The path to the folder where the code should be generated | No       |
-
-A simple sample commmand would be
-`dotnet xcodegen.dll --ctemplate=template.c --htemplate=template.h --outputpath=output TestXCM.xml communication`
-
-This uses the c template template.c, the header template template.h and the TestXCM.xml file to generate two C files with the names communication.c and communication.h under the folder output. If the outputfolder doesn't exists it is created. If C files with the names communication.c or communication.h exists in the output directory they are overwritten.
-
-## CodeGenerationTest
-
-This program sends messages over a udp link to the loopback address. This messages can be used to test the interopability of the C code generated by xcodegen and the xcmparser. The project is configured to generate the latest interface code with xcodegen before every build.
-
-|               |               |
-| ------------- |:-------------:|
-| Language      | C             |
-| IDE           | CodeBlocks    |
-
-### Commandline Options
-
-Currently not available so all ports and adresses are hardcoded in the source code.
+>-f, --xcmfile           Required. The xcm file with the package definitions
+>
+ > -t, --templatefolder    The folder that contains the templates
+>
+ > -o, --outputfolder      The folder where to write the output files
+>
+ > -n, --filename          (Default: xcode) The basefilename (without extension) for the generated output files
+>
+ > --swap                  Swap messages and commands in the output
+>
+ > --help                  Display this help screen.
+>
+ > --version               Display version information.

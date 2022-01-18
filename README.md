@@ -75,6 +75,14 @@ If the verbose mode is activated the CLI shows the json interpretation of the re
 
 To stop the program press Ctrl+C.
 
+### Restrictions
+
+Currently the upstream udp interface can only send data and not receive. So the udp connection is currently for monitoring only and not to send commands.
+
+The only way to send commands at this stage is to use the interactive CLI interface.
+
+However this feature is on the roadmap and in future versions it should be possible to send json formatted data, with the same or at least similar format than the received packets, to the upstream udpserver triggering a command transmission.
+
 ## xcodegen
 
 This program generates the C++ code from the xcm document. It uses the class structure of libxcm and convert it into C++ structures and interface code to send those messages over a datalink.

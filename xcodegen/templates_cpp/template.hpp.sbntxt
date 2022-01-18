@@ -210,7 +210,7 @@ enum class Messages
 	{{~for message in messages-}}
 	{{~}}	{{message.name}},
 	{{~end~}}
-	Unkown
+	Unknown
 };
 
 template<Messages message> struct get_message;
@@ -225,7 +225,7 @@ auto GetMatchedMessage(const std::array<uint8_t, maxdatalength> &data, size_t le
 	{{~for message in messages-}}
 	{{~}}	if(std::get<0>(ret = {{message.name}}::IDMatch(data, length))) return std::make_tuple(Messages::{{message.name}}, std::get<1>(ret), std::get<2>(ret));
 	{{~end~}}
-	return std::make_tuple(Messages::Unkown, 0U, 0U);
+	return std::make_tuple(Messages::Unknown, 0U, 0U);
 }
 //}
 
@@ -367,7 +367,7 @@ enum class Commands
 	{{~for message in commands-}}
 	{{~}}	{{message.name}},
 	{{~end~}}
-	Unkown
+	Unknown
 };
 
 template<Commands message> struct get_command;
@@ -382,7 +382,7 @@ auto GetMatchedCommand(const std::array<uint8_t, maxdatalength> &data, size_t le
 	{{~for message in commands-}}
 	{{~}}	if(std::get<0>(ret = {{message.name}}::IDMatch(data, length))) return std::make_tuple(Commands::{{message.name}}, std::get<1>(ret), std::get<2>(ret));
 	{{~end~}}
-	return std::make_tuple(Commands::Unkown, 0U, 0U);
+	return std::make_tuple(Commands::Unknown, 0U, 0U);
 }
 //}
 #endif

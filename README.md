@@ -60,6 +60,21 @@ After the interface one ore more decoders can be chained together. Possible opti
 
 * smp - To use libsmp decoding on the datastream
 
+When using the --enableinterface option with the -v option for the verbose output, the command line can be used as a simple interface to receive packets and also send packets.
+
+If the interface is enabled press the 't' key to start the interactive mode. This first screen is an overview over all commands defined inside the xcm file.
+
+Select a command by typing the command number and hit enter.
+
+The next screen shows the command overiew. Where you can see the symbols with all entries and the current values. To change a value type the number of the entrie and hit enter.
+Write the new value and hit enter. The view changes back to the command overview but the value should now be updated. To send this command with the set values hit enter without typing anything.
+
+You can change back to the previous window by typing 'e' or "exit" and hitting. If the current window is the top level window this will deactivate the interactive mode.
+
+If the verbose mode is activated the CLI shows the json interpretation of the received data packets, if it is not in interactive mode.
+
+To stop the program press Ctrl+C.
+
 ## xcodegen
 
 This program generates the C++ code from the xcm document. It uses the class structure of libxcm and convert it into C++ structures and interface code to send those messages over a datalink.

@@ -1,0 +1,90 @@
+
+
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.w3schools.com" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:element name="math" type="xs:string"/>
+<xs:element name="unit" type="xs:string"/>
+<xs:element name="entry">
+  <xs:complexType mixed="true">
+    <xs:sequence>
+      <xs:element ref="w3s:math" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+      <xs:element ref="w3s:unit" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="name" use="required"/>
+    <xs:attribute type="xs:int" name="length" use="optional"/>
+    <xs:attribute type="xs:string" name="type" use="required"/>
+    <xs:attribute type="xs:byte" name="bitlength" use="optional"/>
+    <xs:attribute type="xs:string" name="value" use="optional"/>
+    <xs:attribute type="xs:string" name="visibility" use="optional"/>
+    <xs:attribute type="xs:int" name="maxlength" use="optional"/>
+    <xs:attribute type="xs:boolean" name="isvisible" use="optional"/>
+    <xs:attribute type="xs:int" name="historylength" use="optional"/>
+    <xs:attribute type="xs:boolean" name="hashistory" use="optional"/>
+    <xs:attribute type="xs:string" name="historytype" use="optional"/>
+    <xs:attribute type="xs:string" name="check" use="optional"/>
+    <xs:attribute type="xs:boolean" name="importand" use="optional"/>
+    <xs:attribute type="xs:boolean" name="fixed" use="optional"/>
+  </xs:complexType>
+</xs:element>
+<xs:element name="symbol">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="w3s:entry" maxOccurs="unbounded" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="name" use="optional"/>
+    <xs:attribute type="xs:string" name="ref" use="optional"/>
+  </xs:complexType>
+</xs:element>
+<xs:element name="message">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="w3s:symbol" xmlns:w3s="http://www.w3schools.com" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="name" use="required"/>
+    <xs:attribute type="xs:string" name="identifier" use="required"/>
+    <xs:attribute type="xs:string" name="identfiierType" use="required"/>
+    <xs:attribute type="xs:unsignedInt" name="idoffset" use="optional"/>
+    <xs:attribute type="xs:unsignedInt" name="idlength" use="optional"/>
+  </xs:complexType>
+</xs:element>
+  <xs:element name="command">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="w3s:symbol" xmlns:w3s="http://www.w3schools.com"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name" use="required"/>
+      <xs:attribute type="xs:string" name="identifier" use="required"/>
+      <xs:attribute type="xs:string" name="identfiierType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+<xs:element name="symbols">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="w3s:symbol" maxOccurs="unbounded" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+<xs:element name="messages">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="w3s:message" maxOccurs="unbounded" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+  <xs:element name="commands">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="w3s:command" maxOccurs="unbounded" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<xs:element name="spacesystem">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="w3s:symbols" maxOccurs="1" xmlns:w3s="http://www.w3schools.com"/>
+      <xs:element ref="w3s:messages" maxOccurs="1" xmlns:w3s="http://www.w3schools.com"/>
+      <xs:element ref="w3s:commands" maxOccurs="1" xmlns:w3s="http://www.w3schools.com"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+</xs:schema>
+

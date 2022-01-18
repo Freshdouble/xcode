@@ -1,0 +1,10 @@
+.vs/
+obj/
+bin/
+CodeGenerationTest/communication.h
+CodeGenerationTest/CodeGenerationTest.depend
+*/Properties/
+xcodeVisual/
+xcodeImageWriter/
+xcmdoc/
+.vscode/

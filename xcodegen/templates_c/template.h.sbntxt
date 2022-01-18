@@ -1,0 +1,79 @@
+﻿#include "main.h"
+#include <inttypes.h>
+
+//Messages
+
+{{~for message in messages}}
+{{-for line in message.description-}}
+// {{line-}}
+{{-end}}
+typedef struct
+{
+	{{-for symbol in message.symbols}}
+		{{-if symbol.global}}
+		{{-else}}
+			{{-if symbol.anonymous}}
+				{{-for entry in symbol.entries}}
+	{{entry.typename}} {{entry.name | string.downcase}} {{if entry.internaltype == "string"}}[{{entry.length}}]{{end}};
+				{{-end}}
+			{{-else}}
+	struct
+	{
+		{{-if symbol.isbitfield}}
+			{{-for entry in symbol.entries}}
+		unsigned int {{entry.name | string.downcase}} : {{entry.bitlength}};
+			{{-end}}
+		{{-else}}
+				{{-for entry in symbol.entries}}
+		{{entry.typename}} {{entry.name | string.downcase}} {{if entry.internaltype == "string"}}[{{entry.length}}]{{end}};
+				{{-end}}
+		{{-end}}
+	}{{symbol.name | string.downcase}};
+			{{-end}}
+		{{-end}}
+	{{-end}}
+}{{message.name | string.downcase}}_t;
+{{end}}
+//Commands
+
+{{~for message in commands}}
+{{-for line in message.description-}}
+// {{line-}}
+{{-end}}
+typedef struct
+{
+	{{-for symbol in message.symbols}}
+		{{-if symbol.global}}
+		{{-else}}
+			{{-if symbol.anonymous}}
+				{{-for entry in symbol.entries}}
+	{{entry.typename}} {{entry.name | string.downcase}} {{if entry.internaltype == "string"}}[{{entry.length}}]{{end}};
+				{{-end}}
+			{{-else}}
+	struct
+	{
+		{{-if symbol.isbitfield}}
+			{{-for entry in symbol.entries}}
+		unsigned int {{entry.name | string.downcase}} : {{entry.bitlength}};
+			{{-end}}
+		{{-else}}
+				{{-for entry in symbol.entries}}
+		{{entry.typename}} {{entry.name | string.downcase}} {{if entry.internaltype == "string"}}[{{entry.length}}]{{end}};
+				{{-end}}
+		{{-end}}
+	}{{symbol.name | string.downcase}}_t
+			{{-end}}
+		{{-end}}
+	{{-end}}
+}{{message.name | string.downcase}}_t;
+{{end}}
+
+{{~for message in messages}}
+//Message {{message.name}}
+{{for d in message.description}}//{{d}}{{end}}
+uint32_t Transmit{{message.name}}({{message.name | string.downcase}}_t* message);
+{{-end}}
+
+{{~for cmd in commands }}
+uint32_t Receive{{cmd.name}}(uint8_t* msg, uint32_t length);
+{{-end}}

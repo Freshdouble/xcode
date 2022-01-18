@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<spacesystem xmlns="http://www.w3schools.com"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://www.w3.org/2001/XMLSchema xcm.xsd">
+  <symbols>
+  </symbols>
+  <messages>
+    <message name="Status" identifier="$RFD50" identfiierType="string">
+      <!--This paket is a standard status paket.-->
+      <symbol name="test">
+        <!--Test payload to test the decoder and encoder-->
+        <entry name="Testdata" type="uint" bitlength="16" value="32767000">
+          <!--Some Testdata with a fixed value-->
+        </entry>
+        <entry name="TestBool" type="bool" value="true"/>
+      </symbol>
+    </message>
+    <message name="BarometricData" identifier="$RFD50" identfiierType="string">
+      <symbol>
+        <entry name="timestamp" type="uint" bitlength="32"/>
+        <entry name="preassure" type="double"/>
+        <entry name="speed" type="double" visibility="virtual">
+          <math>preassure_diff/timestamp_diff</math>
+        </entry>
+        <entry name="teststring" type="string" maxlength="50"/>
+      </symbol>
+    </message>
+  </messages>
+  <commands>
+    <command name="Testcommand" identifier="$RFCC" identfiierType="string">
+      <symbol>
+        <entry name="command" type="string" length="10" value="RST"/>
+      </symbol>
+    </command>
+  </commands>
+</spacesystem>

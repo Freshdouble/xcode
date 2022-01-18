@@ -1,0 +1,3 @@
+[submodule "libconnection"]
+	path = libconnection
+	url = https://github.com/Freshdouble/libconnection

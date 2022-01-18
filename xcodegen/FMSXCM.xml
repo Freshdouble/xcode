@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<spacesystem xmlns="http://www.w3schools.com"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://www.w3.org/2001/XMLSchema xcm.xsd">
+  <symbols>
+  </symbols>
+  <messages>
+    <message name="Status" identifier="$RFD50" identfiierType="string">
+      <!--Paket to transmit the current device status-->
+	  <!--Testcomment-->
+      <symbol name="Data1">
+		  <!--Bitfield with the current status-->
+        <entry name="adc_initialized" type="bool" value="false"/>
+        <entry name="dac_initialized" type="bool" value="false"/>
+        <entry name="dma_initialized" type="bool" value="false"/>
+        <entry name="flash_ssp_initialized" type="bool" value="false"/>
+        <entry name="i2c0_initialized" type="bool" value="false"/>
+        <entry name="i2c1_initialized" type="bool" value="false"/>
+        <entry name="i2c2_initialized" type="bool" value="false"/>
+        <entry name="uart0_initialized" type="bool" value="false"/>
+        <entry name="uart1_initialized" type="bool" value="false"/>
+        <entry name="uart2_initialized" type="bool" value="false"/>
+        <entry name="uart3_initialized" type="bool" value="false"/>
+        <entry name="rtc_initialized" type="bool" value="false"/>
+        <entry name="ssp1_initialized" type="bool" value="false"/>
+        <entry name="structs_initialized" type="bool" value="false"/>
+        <entry name="systick_initialized" type="bool" value="false"/>
+        <entry name="timer1_initialized" type="bool" value="false"/>
+        <entry name="watchdog_initialized" type="bool" value="false"/>
+        <entry name="eeprom_initialized" type="bool" value="false"/>
+        <entry name="ars_initialized" type="bool" value="false"/>
+        <entry name="power_management_initialized" type="bool" value="false"/>
+        <entry name="flash_initialized" type="bool" value="false"/>
+        <entry name="seven_segment_intern_initialized" type="bool" value="false"/>
+        <entry name="seven_segment_extern_initialized" type="bool" value="false"/>
+        <entry name="startup_success" type="bool" value="false"/>
+        <entry name="sensor_pressure_initialized" type="bool" value="false"/>
+        <entry name="startup_checked" type="bool" value="false"/>
+        <entry name="sensor_imu_initialized" type="bool" value="false"/>
+        <entry name="notused1" type="bool" value="false"/>
+        <entry name="sensor_hig_initialized" type="bool" value="false"/>
+        <entry name="sensor_gyro_initialized" type="bool" value="false"/>
+        <entry name="gnss_ready" type="bool" value="false"/>
+        <entry name="notused2" type="bool" value="false"/>
+      </symbol>
+      <symbol name="Ignitervoltages">
+        <entry name="igniter_1_voltage" type="uint" bitlength="16"/>
+        <entry name="igniter_2_voltage" type="uint" bitlength="16"/>
+        <entry name="igniter_3_voltage" type="uint" bitlength="16"/>
+        <entry name="igniter_4_voltage" type="uint" bitlength="16"/>
+        <entry name="igniter_hpower_voltage" type="uint" bitlength="16"/>
+      </symbol>
+      <symbol>
+        <entry name="orientation" type="uint" bitlength="8"/>
+      </symbol>
+    </message>
+    <message name="BarometricData" identifier="$RFD30" identfiierType="string">
+      <symbol>
+        <entry name="pressure" type="uint" bitlength="32"/>
+      </symbol>
+    </message>
+  </messages>
+  <commands>
+    <command name="Testcommand" identifier="$RFCC" identfiierType="string">
+      <symbol>
+        <entry name="command" type="string" maxlength="50"/>
+      </symbol>
+    </command>
+  </commands>
+</spacesystem>

@@ -1,0 +1,207 @@
+//Includes
+#include <string.h>
+#include "main.h"
+#include "{{outputfilename}}.h"
+{{-if !includefile.empty?}}
+#include "{{includefile}}"
+{{end}}
+#ifndef SENDFUNC
+#error "SENDFUNC must be defined!"
+#endif
+
+//Define interface functions
+static void (* const InitFunction)(void) = 0;
+static void (* const InterfaceWork)(void) = 0;
+static uint32_t (* const SendFunction)(const uint8_t* data, uint32_t length) = SENDFUNC;
+static uint32_t (* const PacketAvailable)(void) = 0;
+static uint32_t (* const ReadPacketFunction)(uint8_t* buffer, uint32_t length) = 0;
+
+//Private functions
+static inline int SequenceEquval(const void* seq1, const void* seq2, uint32_t length)
+{
+    const uint8_t* seq1Ptr = seq1;
+    const uint8_t* seq2Ptr = seq2;
+	for(uint32_t i = 0; i < length; i++)
+	{
+		if(seq1Ptr[i] != seq2Ptr[i])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+
+void communication_init()
+{
+	//Interface init
+	if(InitFunction != 0)
+	{
+		InitFunction();
+	}
+}
+
+{{~for message in messages}}
+//Message {{message.name}}
+{{for d in message.description}}//{{d}}{{end}}
+uint32_t Transmit{{message.name}}({{message.name | string.downcase}}_t* message)
+{
+    {{~if message.idisstring}}
+    const char id[] = "{{message.idstring}}";
+    {{~else~}}
+    const uint8_t id[] = {
+        {{- for i in 0..(message.idbyte.size - 1) -}}
+            {{- if i < (message.idbyte.size - 1) -}}
+            {{-message.idbyte[i]-}},
+            {{-else-}} 
+            {{- message.idbyte[i] -}}
+            {{- end -}}
+        {{- end -}}
+	};
+    {{~end~}}
+    {{~ if message.idisstring ~}}
+    const uint32_t idLength = {{message.idstring | string.size}};
+    {{- else -}}
+    const uint32_t idLength = sizeof(id);
+    {{~ end}}
+    const uint32_t messageLength = {{message.payloadlength}};
+    {{~if message.isvarlength~}}
+    const uint32_t varlengthLength =  
+        {{-for symb in message.symbols-}}
+            {{-if symb.isvarlength-}}
+                {{-for entry in symb.entries-}}
+                    {{-if for.last-}}
+                    strnlen(message->{{-if symb.name != ""-}}{{symb.name}}.{{entry.name}}{{-else-}}{{entry.name}}{{-end}}, {{entry.length}});
+                    {{~else-}}
+                    {{if entry.isvarlength-}}strnlen(message->{{symb.name}}.{{entry.name}}, {{entry.length}}) + {{-end}}
+                    {{-end-}}
+                {{-end-}}
+            {{-end-}}
+        {{-end-}}
+    {{-else~}}
+    const uint32_t varlengthLength = 0;
+    {{-end~}}
+    {{if message.isvarlength}}//We need to use a variable length array for var length pakets{{end}}
+	uint8_t msg[idLength + messageLength + varlengthLength];
+	//Add id to the messagestart
+	memcpy(msg, id, idLength);
+	//Copy bytes to message structs
+    uint32_t offset = idLength;
+
+    {{-for symb in message.symbols}}
+        {{~if symb. isbitfield~}}
+    memcpy(&msg[offset], &message->{{symb.name}}, sizeof(message->{{symb.name}}));
+    offset += sizeof(message->{{symb.name}});
+        {{-else-}}
+            {{-for entry in symb.entries-}}
+                {{-if entry.isvarlength~}}
+    memcpy(&msg[offset], message->
+                                  {{-if symb.name == ""-}}{{entry.name}}
+                                  {{-else-}}message->{{symb.name}}.{{entry.name}}
+                                  {{-end-}},strnlen_s(message->
+                                                    {{-if symb.name == ""-}}{{entry.name}}
+                                                    {{-else-}}message->{{symb.name}}.{{entry.name}}
+                                                    {{-end}}, {{entry.length}}));
+    offset += strnlen_s(message->
+                            {{-if symb.name == ""-}}{{entry.name}}
+                            {{-else-}}&message->{{symb.name}}.{{entry.name}}
+                            {{-end-}}, {{entry.length}});
+                {{-else}}
+    memcpy(&msg[offset], &message->
+                        {{-if symb.name == ""-}}{{entry.name}}
+                        {{-else-}}&message->{{symb.name}}.{{entry.name}}
+                        {{-end-}},{{entry.length}});
+    offset += {{entry.length}};
+                {{~end-}}
+            {{-end-}}
+        {{-end-}}
+    {{-end}}
+	//Transmit message
+	if((SendFunction != 0) && (SendFunction(msg, sizeof(msg)) == sizeof(msg)))
+	{
+		//Signal that the whole message was sent
+		return sizeof(message);
+	}
+	else
+	{
+		//Signal that an error occured and the message wasn't sent
+		return 0;
+	}
+}
+{{end}}
+//Commands
+{{~for cmd in commands }}
+uint32_t Receive{{cmd.name}}(uint8_t* msg, uint32_t length)
+{
+    {{cmd.name | string.downcase}}_t message;
+    memset(&message, 0, sizeof(message));
+    if(length < {{cmd.payloadlength}})
+    {
+        return length;
+    }
+    uint32_t offset = 0;
+    {{~for symb in cmd.symbols-}}
+        {{-if symb.isbitfield-}}
+    memcpy(&msgbuffer[offset], &, sizeof(message.{{symb.name}}));
+    offset += sizeof(message.{{symb.name}});
+        {{-else-}}
+            {{-for entry in symb.entries-}}
+                {{-if entry.isvarlength~}}
+    memcpy(&msg[offset], message.
+                                  {{-if symb.name == ""-}}{{entry.name}}
+                                  {{-else-}}message.{{symb.name}}.{{entry.name}}
+                                  {{-end-}},strnlen_s((const char*)&msg[offset], {{entry.length}}));
+    offset += strnlen_s((const char*)&msg[offset], {{entry.length}});
+                {{-else}}
+    memcpy(&msg[offset], &message.
+                        {{-if symb.name == ""-}}{{entry.name}}
+                        {{-else-}}&message.{{symb.name}}.{{entry.name}}
+                        {{-end-}},{{entry.length}});
+    offset += {{entry.length}};
+                {{~end-}}
+            {{-end-}}
+        {{-end-}}
+    {{-end}}
+    return offset;
+}
+{{ end }}
+
+void ParseMessages()
+{
+    uint8_t buffer[{{maxcommandsize + 10}}];
+    uint32_t datalength;
+
+    if(InterfaceWork != 0)
+        InterfaceWork();
+    {{~for cmd in commands -}}
+        {{~if cmd.idisstring}}
+    const char {{cmd.name}}ID[] = "{{cmd.idstring}}";
+        {{-else-}}
+    const uint8_t {{cmd.name}}ID[] = {
+            {{- for i in 0..(cmd.idbyte.size - 1) -}}
+                {{- if i < (cmd.idbyte.size - 1) -}}
+                {{cmd.idbyte[i]}},
+                {{-else-}} 
+                {{cmd.idbyte[i]}}
+                {{- end -}}
+            {{- end -}}
+        };
+        {{-end-}}
+    {{~end}}
+    uint8_t packets = PacketAvailable();
+    for(uint8_t i = 0; i < packets; i++)
+    {
+        datalength = ReadPacketFunction(buffer, sizeof(buffer));
+        {{~for cmd in commands }}
+        {{~if cmd.isvarlength~}}
+        if(datalength >= {{cmd.totallength}} && datalength <= {{cmd.maxlength}} && SequenceEquval(buffer, {{cmd.name}}ID, {{cmd.idbytelength}}))
+        {{~else~}}
+        if(datalength == {{cmd.totallength}} && SequenceEquval(buffer, {{cmd.name}}ID, {{cmd.idbytelength}}))
+        {{~end~}}
+        {
+            Receive{{cmd.name}}(&buffer[{{cmd.idbytelength}}], datalength - {{cmd.idbytelength}});
+        } {{if !for.last}}else
+        {{-end}}
+        {{-end}}
+    }
+}

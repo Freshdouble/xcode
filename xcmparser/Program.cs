@@ -331,32 +331,16 @@ namespace xcmparser
             }
         }
 
-        static bool ProcessMessage(IEnumerable<byte> data, XCMParserTokenizer tokenizer, TelegrafUDPStream stream)
-        {
-            bool ret = false;
-            foreach (var msg in tokenizer.GetObjects<DataMessage>())
-            {
-                var matcher = msg.GetMatchFunction();
-                if (matcher(data))
-                {
-                    msg.ParseMessage(data.Skip(msg.IDByteLength + msg.IDOffset));
-                    ret = true;
-                    Console.WriteLine(TelegrafUDPStream.ConvertDataToJSON(msg));
-                    stream.SendData(msg);
-                }
-            }
-            return ret;
-        }
-
         static bool ProcessMessage(IEnumerable<byte> data, XCMParserTokenizer tokenizer, DataStream stream, Options options = null)
         {
             bool ret = false;
             foreach (var msg in tokenizer.GetObjects<DataMessage>())
             {
+                var processData = data.Skip(msg.IDPrefixLength);
                 var matcher = msg.GetMatchFunction();
-                if (matcher(data))
+                if (matcher(processData))
                 {
-                    msg.ParseMessage(data.Skip(msg.IDByteLength + msg.IDOffset));
+                    msg.ParseMessage(processData.Skip(msg.IDByteLength + msg.IDOffset));
                     ret = true;
 
                     if (options != null && options.Verbose)

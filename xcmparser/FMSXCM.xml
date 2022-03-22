@@ -21,7 +21,7 @@
     </symbol>
   </symbols>
   <messages>
-    <message name="Status" identifier="$RFD50" identfiierType="string" idoffset="1">
+    <message name="Status" identifier="$RFD50" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <!--This paket is a standard status paket.-->
       <symbol name="Data1">
@@ -193,54 +193,50 @@
         <entry name="orientation" type="uint" bitlength="8"/>
       </symbol>
     </message>
-    <message name="AccelerometerData" identifier="$RFD10" identfiierType="string" idoffset="1">
+    <message name="AccelerometerData" identifier="$RFD10" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol ref="AccelerometerData" name="HighG"/>
       <symbol ref="AccelerometerData" name="IMU"/>
     </message>
-    <message name="AccelerometerPhys" identifier="$RFD15" identfiierType="string" idoffset="1">
+    <message name="AccelerometerPhys" identifier="$RFD15" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol ref="AccelerometerDataFloat" name="HighG"/>
       <symbol ref="AccelerometerDataFloat" name="IMU"/>
     </message>
-    <message name="Gyro" identifier="$RFD20" identfiierType="string" idoffset="1">
+    <message name="Gyro" identifier="$RFD20" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol ref="AccelerometerData" name="HighG"/>
       <symbol ref="AccelerometerData" name="IMU"/>
     </message>
-    <message name="GyrorPhys" identifier="$RFD15" identfiierType="string" idoffset="1">
+    <message name="GyrorPhys" identifier="$RFD15" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol ref="AccelerometerDataFloat" name="HighG"/>
       <symbol ref="AccelerometerDataFloat" name="IMU"/>
     </message>
-    <message name="BarometricData" identifier="$RFD30" identfiierType="string" idoffset="1">
+    <message name="BarometricData" identifier="$RFD30" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol>
         <entry name="pressure" type="uint" bitlength="32"/>
       </symbol>
     </message>
-    <message name="Altimeter" identifier="$RFD35" identfiierType="string" idoffset="1">
+    <message name="Altimeter" identifier="$RFD35" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol name="data">
         <entry name="pressure" type="float"/>
         <entry name="height" type="float">
           <unit>m</unit>
         </entry>
-        <entry visibility="virtual" name="speed" type="float">
-          <unit>m/s</unit>
-          <math>(height_diff/Header_Timestamp_diff)*1000</math>
-        </entry>
       </symbol>
     </message>
-    <message name="Magnetometer" identifier="$RFD35" identfiierType="string" idoffset="1">
+    <message name="Magnetometer" identifier="$RFD35" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol ref="AccelerometerData" name="Mag"/>
     </message>
-    <message name="MagnetometerPhys" identifier="$RFD35" identfiierType="string" idoffset="1">
+    <message name="MagnetometerPhys" identifier="$RFD35" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol ref="AccelerometerDataFloat" name="Mag"/>
     </message>
-    <message name="Temperature" identifier="$RFD60" identfiierType="string" idoffset="1">
+    <message name="Temperature" identifier="$RFD60" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol>
         <entry name="BarometerTemperature" type="uint" bitlength="32" value="0"/>
@@ -248,7 +244,7 @@
         <entry name="GyroTemperature" type="int" bitlength="8" value="0"/>
       </symbol>
     </message>
-    <message name="TemperaturePhys" identifier="$RFD65" identfiierType="string" idoffset="1">
+    <message name="TemperaturePhys" identifier="$RFD65" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol>
         <entry name="IMUTemperature" type="float" value="0"/>
@@ -256,20 +252,20 @@
         <entry name="GyroTemperature" type="float" value="0"/>
       </symbol>
     </message>
-    <message name="Power" identifier="$RFD90" identfiierType="string" idoffset="1">
+    <message name="Power" identifier="$RFD90" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol>
         <entry name="Voltage" type="float" value="0"/>
         <entry name="Current" type="float" value="0"/>
       </symbol>
     </message>
-    <message name="Apogee" identifier="$RFD72" identfiierType="string" idoffset="1">
+    <message name="Apogee" identifier="$RFD72" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol>
         <entry name="Apogee" type="float" value="0"/>
       </symbol>
     </message>
-    <message name="StartUpInfo" identifier="$RFD03" identfiierType="string" idoffset="1">
+    <message name="StartUpInfo" identifier="$RFD03" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol>
         <entry name="GitCommit" type="uint" bitlength="32" value="0"/>
@@ -279,7 +275,7 @@
         <entry name="EventActionStored" type="uint" bitlength="8" value="0"/>
       </symbol>
     </message>
-    <message name="GNSS" identifier="$RFD80" identfiierType="string" idoffset="1">
+    <message name="GNSS" identifier="$RFD80" identfiierType="string" idoffset="1" idPrefixLength="1">
       <symbol ref="Header"/>
       <symbol name="GNSSData">
         <entry name="latitude" type="float" value="0"/>
@@ -298,7 +294,7 @@
         <entry name="tow" type="uint" bitlength="32" value="0"/>
       </symbol>
     </message>
-    <message name="Message" identifier="$FMSM1" identfiierType="string" idoffset="2">
+    <message name="Message" identifier="$FMSM1" identfiierType="string" idoffset="2" idPrefixLength="1">
       <symbol name="data">
         <entry name="Message" type="string" maxlength="100"/>
       </symbol>

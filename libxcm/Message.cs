@@ -45,6 +45,10 @@ namespace libxcm
             {
                 idlength = int.Parse(messageNode.Attributes["idlength"].Value);
             }
+            if(messageNode.Attributes["idPrefixLength"] != null)
+            {
+                IDPrefixLength = int.Parse(messageNode.Attributes["idPrefixLength"].Value);
+            }
             using (MemoryStream str = new MemoryStream())
             {
                 var sw = new StreamWriter(str);
@@ -87,6 +91,8 @@ namespace libxcm
                 DocuText.Add((new StreamReader(str)).ReadToEnd());
             }
         }
+
+        public int IDPrefixLength { get; set; } = 0;
 
         public List<string> DocuText { get; set; } = new List<string>();
 

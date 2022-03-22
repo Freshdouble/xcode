@@ -44,6 +44,7 @@
     <xs:attribute type="xs:string" name="identfiierType" use="required"/>
     <xs:attribute type="xs:unsignedInt" name="idoffset" use="optional"/>
     <xs:attribute type="xs:unsignedInt" name="idlength" use="optional"/>
+	<xs:attribute type="xs:unsignedInt" name="idPrefixLength" use="optional"/>
   </xs:complexType>
 </xs:element>
   <xs:element name="command">

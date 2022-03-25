@@ -34,6 +34,8 @@ namespace xcmparser
         public bool NoForward { get; set; } = false;
         [Option("enableinterface", HelpText = "Enables a basic text interface that can be opened by pressing the t key in the console window")]
         public bool EnableInterace { get; set; } = false;
+        [Option("websocket", HelpText = "Enables the websocket interface on the specified IPEndpoint eg: 127.0.0.1:9001")]
+        public string websocketAddress { get; set; } = string.Empty;
     }
     class Program
     {
@@ -47,6 +49,13 @@ namespace xcmparser
             string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string workingDir = Directory.GetCurrentDirectory();
             int ret = 0;
+
+            Console.CancelKeyPress += (obj, eventargs) =>
+            {
+                eventargs.Cancel = true;
+                cts.Cancel();
+            };
+
             try
             {
                 Parser.Default.ParseArguments<Options>(args).WithParsed(o => { optionsValid = true; opts = o; });
@@ -76,39 +85,67 @@ namespace xcmparser
                     {
                         XCMParserTokenizer tokenizer = new XCMParserTokenizer(doc);
                         //using TelegrafUDPStream stream = new TelegrafUDPStream(new IPEndPoint(IPAddress.Any, 3550), IPEndPoint.Parse(args[1]));
-                        { 
+                        {
                             pipe.StartService();
                             client.StartService();
 
                             Console.WriteLine("Upstream interface and downstream interface started");
 
                             var token = cts.Token;
-                            while (!token.IsCancellationRequested)
+                            WebSocketStream wsstream = null;
+                            if(!string.IsNullOrEmpty(opts.websocketAddress))
                             {
                                 try
                                 {
-                                    var msg = await pipe.ReadMessageAsync(token);
-                                    lock (opts)
-                                    {
-                                        ProcessMessage(msg.Data, tokenizer, client, opts);
-                                    }
+                                    var endpoint = IPEndPoint.Parse(opts.websocketAddress);
+                                    wsstream = new WebSocketStream(endpoint);
+                                    Console.WriteLine($"Websocket server started on: {endpoint}");
                                 }
-                                catch (OperationCanceledException)
+                                catch(Exception ex)
                                 {
-
-                                }
-                                catch (AggregateException ex)
-                                {
-                                    if (!(ex.InnerException is TimeoutException))
-                                    {
-                                        Console.WriteLine("Unkown exception:");
-                                        Console.WriteLine(ex);
-                                        cts.Cancel();
-                                        return false;
-                                    }
+                                    Console.WriteLine("Couldn't create websocket server");
+                                    Console.WriteLine(ex.Message);
+                                    wsstream = null;
                                 }
                             }
-                            return true;
+                            try
+                            {
+                                while (!token.IsCancellationRequested)
+                                {
+                                    try
+                                    {
+                                        var msg = await pipe.ReadMessageAsync(token);
+                                        string jsondata;
+                                        lock (opts)
+                                        {
+                                            ProcessMessage(msg.Data, tokenizer, client, out jsondata, opts);
+                                        }
+                                        if (!string.IsNullOrWhiteSpace(jsondata))
+                                        {
+                                            wsstream?.Send(jsondata);
+                                        }
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+
+                                    }
+                                    catch (AggregateException ex)
+                                    {
+                                        if (!(ex.InnerException is TimeoutException))
+                                        {
+                                            Console.WriteLine("Unkown exception:");
+                                            Console.WriteLine(ex);
+                                            cts.Cancel();
+                                            return false;
+                                        }
+                                    }
+                                }
+                                return true;
+                            }
+                            finally
+                            {
+                                wsstream?.Dispose();
+                            }
                         }
                     });
                     XCMParserTokenizer tokenizer = new XCMParserTokenizer(doc);
@@ -123,14 +160,14 @@ namespace xcmparser
                     Console.WriteLine("Startup successfull");
                     while (!token.IsCancellationRequested)
                     {
-                        if (Console.KeyAvailable)
+                        if (opts.EnableInterace && Console.KeyAvailable)
                         {
                             var key = Console.ReadKey(true).Key;
                             switch (key)
                             {
                                 case ConsoleKey.T:
                                     bool enableInterface = false;
-                                    lock(opts)
+                                    lock (opts)
                                     {
                                         enableInterface = opts.EnableInterace;
                                     }
@@ -293,7 +330,7 @@ namespace xcmparser
                     }
                 }
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
 
             }
@@ -322,18 +359,19 @@ namespace xcmparser
 
         static IEnumerable<KeyValuePair<DataSymbol, DataEntry>> GetCommandEntries(DataCommand msg)
         {
-            foreach(DataSymbol symbol in msg)
+            foreach (DataSymbol symbol in msg)
             {
-                foreach(DataEntry entry in symbol)
+                foreach (DataEntry entry in symbol)
                 {
                     yield return new KeyValuePair<DataSymbol, DataEntry>(symbol, entry);
                 }
             }
         }
 
-        static bool ProcessMessage(IEnumerable<byte> data, XCMParserTokenizer tokenizer, DataStream stream, Options options = null)
+        static bool ProcessMessage(IEnumerable<byte> data, XCMParserTokenizer tokenizer, DataStream stream, out string jsondata, Options options = null)
         {
             bool ret = false;
+            jsondata = string.Empty;
             foreach (var msg in tokenizer.GetObjects<DataMessage>())
             {
                 var processData = data.Skip(msg.IDPrefixLength);
@@ -351,6 +389,7 @@ namespace xcmparser
                     if (options == null || !options.NoForward)
                     {
                         var json = TelegrafUDPStream.ConvertDataToJSON(msg);
+                        jsondata = json;
                         stream.PublishUpstreamData(new libconnection.Message(Encoding.UTF8.GetBytes(json)));
                     }
                 }

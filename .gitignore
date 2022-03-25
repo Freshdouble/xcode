@@ -366,3 +366,5 @@ FodyWeavers.xsd
 *.so
 
 *.o
+
+*.csproj.user

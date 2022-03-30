@@ -62,6 +62,7 @@ namespace libxcmparse.DataObjects
         }
 
         public List<DataSymbol> Sibblings { get; set; } = new List<DataSymbol>();
+        public object Parent { get; set; } = null;
 
         public override Symbol Copy(bool fullCopy = false)
         {

@@ -32,6 +32,7 @@ namespace libxcmparse.DataObjects
             }
             foreach (DataSymbol symb in this)
             {
+                symb.Parent = this;
                 symb.Sibblings = sibblings;
             }
         }

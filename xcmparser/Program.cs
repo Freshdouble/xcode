@@ -187,6 +187,18 @@ namespace xcmparser
                                     break;
                             }
                         }
+                        if(receiveTask.IsCompleted)
+                        {
+                            if(receiveTask.Exception != null)
+                            {
+                                foreach(var e in receiveTask.Exception.InnerExceptions)
+                                {
+                                    Console.WriteLine(e);
+                                }
+                            }
+                            ret = -3;
+                            break;
+                        }
                         Thread.Sleep(10);
                     }
                 }
@@ -203,7 +215,14 @@ namespace xcmparser
             }
             cts?.Cancel();
             Console.WriteLine("Shutting down");
-            receiveTask?.Wait(1000);
+            try
+            {
+                receiveTask?.Wait(1000);
+            }
+            catch(Exception)
+            {
+
+            }
             return ret;
         }
 
@@ -383,12 +402,12 @@ namespace xcmparser
 
                     if (options != null && options.Verbose)
                     {
-                        var json = TelegrafUDPStream.ConvertDataToJSON(msg, true);
+                        var json = JsonConverter.ConvertDataToJSON(msg, true);
                         Console.WriteLine(json);
                     }
                     if (options == null || !options.NoForward)
                     {
-                        var json = TelegrafUDPStream.ConvertDataToJSON(msg);
+                        var json = JsonConverter.ConvertDataToJSON(msg);
                         jsondata = json;
                         stream.PublishUpstreamData(new libconnection.Message(Encoding.UTF8.GetBytes(json)));
                     }

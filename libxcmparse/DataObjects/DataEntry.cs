@@ -24,6 +24,8 @@ namespace libxcmparse.DataObjects
         private HistoryType historytype = HistoryType.roll;
         private IType[] type = null;
         private int historyindex = 0;
+        private Expression validExpr = null;
+        private Expression warningExpr = null;
         public DataEntry(XmlNode entryNode) : base(entryNode)
         {
             if(entryNode.Attributes["hashistory"] != null)
@@ -190,6 +192,30 @@ namespace libxcmparse.DataObjects
                         case "unit":
                             Unit = childNode.FirstChild.Value;
                             break;
+                        case "valid":
+                            try
+                            {
+                                validExpr = new Expression(childNode.FirstChild.Value);
+                                validExpr.Parameters.Add("value", GetValue<object>());
+                                IsValid = (bool)validExpr.Evaluate();
+                            }
+                            catch(InvalidCastException)
+                            {
+                                throw new XmlException($"Error in Element {entryNode.OuterXml}\n Invalid ValidExpression in {Name} found. Expression must return a boolean");    
+                            }
+                            break;
+                        case "warning":
+                            try
+                            {
+                                warningExpr = new Expression(childNode.FirstChild.Value);
+                                warningExpr.Parameters.Add("value", GetValue<object>());
+                                HasWarning = (bool)warningExpr.Evaluate();
+                            }
+                            catch (InvalidCastException)
+                            {
+                                throw new XmlException($"Error in Element {entryNode.OuterXml}\n Invalid WarningExpression in {Name} found. Expression must return a boolean");
+                            }
+                            break;
                     }
                 }
             }
@@ -224,11 +250,14 @@ namespace libxcmparse.DataObjects
 
         public string Unit { get; private set; } = "";
 
+        public bool IsValid { get; private set; } = true;
+        public bool HasWarning { get; private set; } = false;
+
         public int SetValue(IEnumerable<byte> data)
         {
-            if(HasHistory)
+            if (HasHistory)
             {
-                if(historyindex >= type.Length)
+                if (historyindex >= type.Length)
                 {
                     switch (historytype)
                     {
@@ -246,10 +275,56 @@ namespace libxcmparse.DataObjects
                 }
                 int ret = type[historyindex].SetValue(data as byte[] ?? data.ToArray());
                 historyindex++;
+                IsValid = true;
+                HasWarning = false;
                 return ret;
             }
             else
-                return Value.SetValue(data as byte[] ?? data.ToArray());
+            {
+                int ret = Value.SetValue(data as byte[] ?? data.ToArray());
+
+                if(validExpr != null)
+                {
+                    if (validExpr.Parameters.ContainsKey("value"))
+                    {
+                        validExpr.Parameters["value"] = GetValue<object>();
+                    }
+                    else
+                    {
+                        validExpr.Parameters.Add("value", GetValue<object>());
+                    }
+                    try
+                    {
+                        IsValid = (bool)validExpr.Evaluate();
+                    }
+                    catch(InvalidCastException)
+                    {
+                        throw new XmlException($"Error in Element {(Parent.Parent as DataMessage)?.Name}:{Parent.Name}:{Name} Invalid ValidExpression. Expression must return a boolean");
+                    }
+                }
+
+                if (warningExpr != null)
+                {
+                    if (warningExpr.Parameters.ContainsKey("value"))
+                    {
+                        warningExpr.Parameters["value"] = GetValue<object>();
+                    }
+                    else
+                    {
+                        warningExpr.Parameters.Add("value", GetValue<object>());
+                    }
+                    try
+                    {
+                        HasWarning = (bool)warningExpr.Evaluate();
+                    }
+                    catch(InvalidCastException)
+                    {
+                        throw new XmlException($"Error in Element {(Parent.Parent as DataMessage)?.Name}:{Parent.Name}:{Name} Invalid WarningExpression. Expression must return a boolean");
+                    }
+                }
+
+                return ret;
+            }
         }
 
         public void SetValue(object data)

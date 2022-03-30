@@ -1,4 +1,5 @@
 ﻿using libxcm;
+using libxcmparse.DataObjects;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,23 +17,6 @@ using System.Threading.Tasks;
 
 namespace xcmparser
 {
-    public class BigIntegerConverter : JsonConverter<BigInteger>
-    {
-        public override BigInteger Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType != JsonTokenType.Number)
-                throw new JsonException(string.Format("Found token {0} but expected token {1}", reader.TokenType, JsonTokenType.Number));
-            using var doc = JsonDocument.ParseValue(ref reader);
-            return BigInteger.Parse(doc.RootElement.GetRawText(), NumberFormatInfo.InvariantInfo);
-        }
-
-        public override void Write(Utf8JsonWriter writer, BigInteger value, JsonSerializerOptions options)
-        {
-            var s = value.ToString(NumberFormatInfo.InvariantInfo);
-            using var doc = JsonDocument.Parse(s);
-            doc.WriteTo(writer);
-        }
-    }
     internal class TelegrafUDPStream : IDisposable
     {
 
@@ -103,67 +87,13 @@ namespace xcmparser
             return ret;
         }
 
-        private static object SymbolToTagedObject(Symbol symb)
+        public void SendData(DataMessage msg)
         {
-            Dictionary<string, object> tags = new Dictionary<string, object>();
-            foreach(var entry in symb)
-            {
-                var val = entry.GetValue<object>();
-                string name = entry.Name;
-                switch (val)
-                {
-                    case bool:
-                        name += "_bool";
-                        break;
-                    case string:
-                        name += "_string";
-                        break;
-                    default:
-                        break;
-                }
-                tags.Add(name, val);
-            }
-            return tags;
-        }
-
-        public static byte[] ConvertDataToJSONByte(Message msg)
-        {
-            return Encoding.UTF8.GetBytes(ConvertDataToJSON(msg));
-        }
-        public static string ConvertDataToJSON(Message msg, bool pretty = false)
-        {
-            Dictionary<string, object> tags = new Dictionary<string, object>();
-            foreach (var symbol in msg)
-            {
-                string name = symbol.Name;
-                int counter = 0;
-                if(string.IsNullOrWhiteSpace(name))
-                {
-                    do
-                    {
-                        name = "Anonymous" + counter;
-                        counter++;
-                    }while(tags.ContainsKey(name));
-                }
-                tags.Add(name, SymbolToTagedObject(symbol));
-            }
-            JsonSerializerOptions options = new JsonSerializerOptions();
-            options.Converters.Add(new BigIntegerConverter());
-            options.WriteIndented = pretty;
-            return JsonSerializer.Serialize(new
-            {
-                MessageName = msg.Name,
-                Fields = tags
-            },options);
-        }
-
-        public void SendData(Message msg)
-        {
-            byte[] data = ConvertDataToJSONByte(msg);
+            byte[] data = JsonConverter.ConvertDataToJSONByte(msg);
             client.Send(data, data.Length);
         }
 
-        public async Task SendDataAsync(Message msg)
+        public async Task SendDataAsync(DataMessage msg)
         {
             await Task.Run(() =>
             {

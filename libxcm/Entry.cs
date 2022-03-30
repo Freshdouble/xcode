@@ -53,19 +53,6 @@ namespace libxcm
                 IsFixedCommand = entryNode.Attributes["fixed"].Value.ToLower() == "true";
             }
 
-            if(entryNode.Attributes["importand"] != null)
-            {
-                IsImportand = entryNode.Attributes["importand"].Value.ToLower() == "true";
-            }
-
-            string checkString = null;
-            if (entryNode.Attributes["check"] != null)
-            {
-                checkString = entryNode.Attributes["check"].Value;
-                IsImportand = true;
-                IsChecked = true;
-            }
-
             switch (type.ToLower())
             {
                 case "int":
@@ -79,11 +66,6 @@ namespace libxcm
                     {
                         Value.SetValue(valueString);
                     }
-                    CheckValue = new FixedNumber(bitlength, true);
-                    if (checkString != null)
-                    {
-                        CheckValue.SetValue(checkString);
-                    }
                     break;
                 case "uint":
                     BaseType = "fixed";
@@ -95,11 +77,6 @@ namespace libxcm
                     if (valueString != null)
                     {
                         Value.SetValue(valueString);
-                    }
-                    CheckValue = new FixedNumber(bitlength, false);
-                    if (checkString != null)
-                    {
-                        CheckValue.SetValue(checkString);
                     }
                     break;
                 case "bool":
@@ -123,11 +100,6 @@ namespace libxcm
                     {
                         Value.SetValue(valueString);
                     }
-                    CheckValue = new Bool();
-                    if (checkString != null)
-                    {
-                        CheckValue.SetValue(checkString);
-                    }
                     break;
                 case "double":
                     BaseType = "double";
@@ -136,11 +108,6 @@ namespace libxcm
                     {
                         Value.SetValue(valueString);
                     }
-                    CheckValue = new FloatingPointNumber(FloatingPointType.@double);
-                    if (checkString != null)
-                    {
-                        CheckValue.SetValue(checkString);
-                    }
                     break;
                 case "float":
                     BaseType = "float";
@@ -148,11 +115,6 @@ namespace libxcm
                     if (valueString != null)
                     {
                         Value.SetValue(valueString);
-                    }
-                    CheckValue = new FloatingPointNumber(FloatingPointType.@float);
-                    if (checkString != null)
-                    {
-                        CheckValue.SetValue(checkString);
                     }
                     break;
                 case "string":
@@ -235,21 +197,6 @@ namespace libxcm
             {
                 return false;
             }
-        }
-
-        public IType CheckValue { get; set; }
-
-        public bool IsImportand { get; set; } = false;
-
-        public bool IsChecked { get; set; } = false;
-
-        public bool CheckValueForCorrectness()
-        {
-            if(IsChecked && Value != null && CheckValue != null)
-            {
-                return Value.Equals(CheckValue);
-            }
-            return true;
         }
 
         public int MaxBitLength

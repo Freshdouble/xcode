@@ -61,6 +61,29 @@ namespace libxcmparse.DataObjects
             return ret;
         }
 
+        public bool CheckValidity()
+        {
+            bool ret = true;
+            foreach(DataEntry entry in this)
+            {
+                ret &= entry.IsValid;
+            }
+            return ret;
+        }
+
+        public bool HasChecks
+        {
+            get
+            {
+                bool ret = false;
+                foreach (DataEntry entry in this)
+                {
+                    ret |= entry.HasChecks;
+                }
+                return ret;
+            }
+        }
+
         public List<DataSymbol> Sibblings { get; set; } = new List<DataSymbol>();
         public object Parent { get; set; } = null;
 

@@ -193,6 +193,7 @@ namespace libxcmparse.DataObjects
                             Unit = childNode.FirstChild.Value;
                             break;
                         case "valid":
+                            HasChecks = true;
                             try
                             {
                                 validExpr = new Expression(childNode.FirstChild.Value);
@@ -205,6 +206,7 @@ namespace libxcmparse.DataObjects
                             }
                             break;
                         case "warning":
+                            HasChecks = true;
                             try
                             {
                                 warningExpr = new Expression(childNode.FirstChild.Value);
@@ -252,6 +254,8 @@ namespace libxcmparse.DataObjects
 
         public bool IsValid { get; private set; } = true;
         public bool HasWarning { get; private set; } = false;
+
+        public bool HasChecks { get; private set; } = false;
 
         public int SetValue(IEnumerable<byte> data)
         {

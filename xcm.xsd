@@ -3,11 +3,14 @@
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.w3schools.com" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 <xs:element name="math" type="xs:string"/>
 <xs:element name="unit" type="xs:string"/>
+<xs:element name="valid" type="xs:string"/>
+<xs:element name="warning" type="xs:string"/>
 <xs:element name="entry">
   <xs:complexType mixed="true">
     <xs:sequence>
-      <xs:element ref="w3s:math" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
       <xs:element ref="w3s:unit" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+	  <xs:element ref="w3s:valid" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
+	  <xs:element ref="w3s:warning" minOccurs="0" xmlns:w3s="http://www.w3schools.com"/>
     </xs:sequence>
     <xs:attribute type="xs:string" name="name" use="required"/>
     <xs:attribute type="xs:int" name="length" use="optional"/>

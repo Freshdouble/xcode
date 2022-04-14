@@ -65,6 +65,30 @@ namespace libxcmparse.DataObjects
             Received?.Invoke(this, new EventArgs());
         }
 
+        public bool CheckValidity()
+        {
+            bool ret = true;
+            foreach(DataSymbol symbol in this)
+            {
+                ret &= symbol.CheckValidity();
+            }
+            return ret;
+        }
+
+        public bool HasChecks
+        {
+            get
+            {
+                bool ret = false;
+                foreach (DataSymbol symbol in this)
+                {
+                    ret |= symbol.HasChecks;
+                }
+                return ret;
+            }
+        }
+
+
         public byte[] GetData()
         {
             if (IsVariableLength)

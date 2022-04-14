@@ -32,7 +32,14 @@ namespace xcmparser
                 }*/
                 tags.Add(name, val);
             }
-            return tags;
+            return new
+            {
+                value = tags,
+                isValid = symb.CheckValidity(),
+                isEntry = false,
+                isSymbol = true,
+                hasChecks = symb.HasChecks
+            };
         }
 
         public static byte[] ConvertDataToJSONByte(DataMessage msg)
@@ -44,11 +51,12 @@ namespace xcmparser
         {
             return new
             {
-                name = entry.Name,
                 value = entry.GetValue<object>(),
                 isEntry = true,
+                isSymbol = false,
                 isValid = entry.IsValid,
                 hasWarning = entry.HasWarning,
+                hasChecks = entry.HasChecks,
             };
         }
         public static string ConvertDataToJSON(DataMessage msg, bool pretty = false)
@@ -84,7 +92,9 @@ namespace xcmparser
                 Type = "receiveddata",
                 MessageName = msg.Name,
                 Fields = tags,
-                isExtended = true
+                isExtended = true,
+                isValid = msg.CheckValidity(),
+                hasChecks = msg.HasChecks,
             }, options);
         }
     }

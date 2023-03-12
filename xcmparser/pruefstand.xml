@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<spacesystem>
+	<connections>
+		<incomming>
+			<connection name="testboardSerial" type="input">
+				<stage>
+					<class>serial</class>
+					<parameter name="port">COM6</parameter>
+				</stage>
+				<stage>
+					<class>smp</class>
+				</stage>
+			</connection>
+		</incomming>
+		<outgoing>
+			<connection name="telegrafStream">
+				<stage>
+					<class>console</class>
+				</stage>
+			</connection>
+		</outgoing>
+	</connections>
+	<symbols>
+	</symbols>
+	<system name="testboard">
+		<defaultInput>testboardSerial</defaultInput>
+		<defaultOutput>telegrafStream</defaultOutput>
+		<messages>
+			<message name="Status" identifier="$" identfiierType="string" idoffset="1">
+				<symbol>
+					<entry name="Temperature" type="uint" bitlength="16"/>
+				</symbol>
+			</message>
+		</messages>
+	</system>
+</spacesystem>

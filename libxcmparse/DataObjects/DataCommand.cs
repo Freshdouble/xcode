@@ -8,15 +8,11 @@ namespace libxcmparse.DataObjects
 {
     public class DataCommand : Command
     {
-        public static Command CommandFactory(XmlNode messageNode, List<Symbol> knownSymbols)
-        {
-            return new DataCommand(messageNode, knownSymbols);
-        }
-        public DataCommand(XmlNode commandNode, List<Symbol> knownSymbols) : this(commandNode, knownSymbols, DataMessage.SymbolFactory, DataMessage.EntryFactory)
+        public DataCommand(XmlNode commandNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound) : this(commandNode, knownSymbols, DataMessage.SymbolFactory, DataMessage.EntryFactory, inbound, outbound)
         {
         }
 
-        protected DataCommand(XmlNode commandNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory) : base(commandNode, knownSymbols, symbolFactory, EntryFactory)
+        protected DataCommand(XmlNode commandNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory, Connection inbound, Connection outbound) : base(commandNode, knownSymbols, symbolFactory, EntryFactory, inbound, outbound)
         {
             List<DataSymbol> sibblings = new List<DataSymbol>();
             foreach (DataSymbol symb in this)

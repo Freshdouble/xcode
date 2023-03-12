@@ -23,6 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="pruefstand.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="FMSXCM.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

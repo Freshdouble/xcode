@@ -7,11 +7,11 @@ namespace libxcm
 {
     public class Command : Message
     {
-        public Command(XmlNode commandNode, List<Symbol> knownSymbols) : base(commandNode, knownSymbols)
+        public Command(XmlNode commandNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound) : base(commandNode, knownSymbols, inbound, outbound)
         {
         }
 
-        protected Command(XmlNode commandNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory) : base(commandNode, knownSymbols, symbolFactory, EntryFactory)
+        protected Command(XmlNode commandNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory, Connection inbound, Connection outbound) : base(commandNode, knownSymbols, symbolFactory, EntryFactory, inbound, outbound)
         {
         }
     }

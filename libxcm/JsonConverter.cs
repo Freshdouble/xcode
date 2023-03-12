@@ -1,5 +1,4 @@
 ﻿using libxcm;
-using libxcmparse.DataObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,60 +8,43 @@ using System.Threading.Tasks;
 
 namespace xcmparser
 {
-    static class JsonConverter
+    public class JsonConverter : IMessageConverter
     {
-        private static object SymbolToTagedObject(DataSymbol symb)
+        private static object SymbolToTagedObject(Symbol symb)
         {
             Dictionary<string, object> tags = new Dictionary<string, object>();
-            foreach (DataEntry entry in symb)
+            foreach (Entry entry in symb)
             {
                 var val = EntryToExtendedJSON(entry);
                 string name = entry.Name;
-                /*
-                switch (val)
-                {
-                    case bool:
-                        name += "_bool";
-                        break;
-                    case string:
-                        name += "_string";
-                        break;
-                    default:
-                        break;
-                }*/
                 tags.Add(name, val);
             }
             return new
             {
                 value = tags,
-                isValid = symb.CheckValidity(),
                 isEntry = false,
-                isSymbol = true,
-                hasChecks = symb.HasChecks
+                isSymbol = true
             };
         }
 
-        public static byte[] ConvertDataToJSONByte(DataMessage msg)
+        public static byte[] ConvertDataToJSONByte(Message msg)
         {
             return Encoding.UTF8.GetBytes(ConvertDataToJSON(msg));
         }
 
-        public static object EntryToExtendedJSON(DataEntry entry)
+        public static object EntryToExtendedJSON(Entry entry)
         {
             return new
             {
                 value = entry.GetValue<object>(),
                 isEntry = true,
-                isSymbol = false,
-                isValid = entry.IsValid,
-                hasWarning = entry.HasWarning,
-                hasChecks = entry.HasChecks,
+                isSymbol = false
             };
         }
-        public static string ConvertDataToJSON(DataMessage msg, bool pretty = false)
+        public static string ConvertDataToJSON(Message msg, bool pretty = false)
         {
             Dictionary<string, object> tags = new Dictionary<string, object>();
-            foreach (DataSymbol symbol in msg)
+            foreach (Symbol symbol in msg)
             {
                 string name = symbol.Name;
                 //int counter = 0;
@@ -74,7 +56,7 @@ namespace xcmparser
                         name = "Anonymous" + counter;
                         counter++;
                     }while(tags.ContainsKey(name));*/
-                    foreach (DataEntry entry in symbol)
+                    foreach (Entry entry in symbol)
                     {
                         tags.Add(entry.Name, EntryToExtendedJSON(entry));
                     }
@@ -92,10 +74,13 @@ namespace xcmparser
                 Type = "receiveddata",
                 MessageName = msg.Name,
                 Fields = tags,
-                isExtended = true,
-                isValid = msg.CheckValidity(),
-                hasChecks = msg.HasChecks,
+                isExtended = true
             }, options);
+        }
+
+        public byte[] ConvertToByteArray(Message msg)
+        {
+            return ConvertDataToJSONByte(msg);
         }
     }
 }

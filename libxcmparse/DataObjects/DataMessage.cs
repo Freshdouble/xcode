@@ -10,10 +10,6 @@ namespace libxcmparse.DataObjects
     public class DataMessage : Message, IEnumerable<Symbol>
     {
         public event EventHandler Received;
-        public static Message MessageFactory(XmlNode messageNode, List<Symbol> knownSymbols)
-        {
-            return new DataMessage(messageNode, knownSymbols);
-        }
         public static Symbol SymbolFactory(XmlNode symbolNode, bool isNested)
         {
             return new DataSymbol(symbolNode, isNested);
@@ -23,7 +19,7 @@ namespace libxcmparse.DataObjects
         {
             return new DataEntry(entryNode);
         }
-        public DataMessage(XmlNode messageNode, List<Symbol> knownSymbols) : base(messageNode, knownSymbols, SymbolFactory, EntryFactory)
+        public DataMessage(XmlNode messageNode, List<Symbol> knownSymbols, Connection inboundConnection, Connection outboundConnection) : base(messageNode, knownSymbols, SymbolFactory, EntryFactory, inboundConnection, outboundConnection)
         {
             List<DataSymbol> sibblings = new List<DataSymbol>();
             foreach (DataSymbol symb in this)
@@ -35,6 +31,13 @@ namespace libxcmparse.DataObjects
                 symb.Parent = this;
                 symb.Sibblings = sibblings;
             }
+
+            inbound.MessageReceived += Inbound_MessageReceived;
+        }
+
+        private void Inbound_MessageReceived(object sender, libconnection.MessageEventArgs e)
+        {
+            ParseMessage(e.Message);
         }
 
         public void ParseMessage(IEnumerable<byte> message)
@@ -63,6 +66,7 @@ namespace libxcmparse.DataObjects
                 }
             }
             Received?.Invoke(this, new EventArgs());
+            outbound.TransmitParsedData(this);
         }
 
         public bool CheckValidity()

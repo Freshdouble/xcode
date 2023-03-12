@@ -12,6 +12,8 @@ namespace libxcm
     {
         protected readonly byte[] identifier;
         protected readonly List<Symbol> symbols = new List<Symbol>();
+        protected readonly Connection inbound;
+        protected readonly Connection outbound;
 
         public int IDOffset { get; protected set; } = 0;
         private int idlength = -1;
@@ -26,13 +28,16 @@ namespace libxcm
             return new Entry(entryNode);
         }
 
-        public Message(XmlNode messageNode, List<Symbol> knownSymbols) : this(messageNode, knownSymbols, SymbolFactory, EntryFactory)
+        public Message(XmlNode messageNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound) : this(messageNode, knownSymbols, SymbolFactory, EntryFactory, inbound, outbound)
         {
             
         }
 
-        protected Message(XmlNode messageNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory)
+        protected Message(XmlNode messageNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory, Connection inbound, Connection outbound)
         {
+            this.inbound = inbound;
+            this.outbound = outbound;
+
             bool isString;
             identifier = GetIdentifierData(messageNode, out isString);
             IdentifierIsString = isString;
@@ -181,6 +186,7 @@ namespace libxcm
 
         public virtual bool Match(IEnumerable<byte> data)
         {
+            /*
             bool groupmatched = true;
             if(Group != null)
             {
@@ -189,7 +195,8 @@ namespace libxcm
             }
 
             groupmatched = groupmatched && data.Take(identifier.Length).SequenceEqual(identifier);
-            return groupmatched;
+            return groupmatched;*/
+            return data.Take(identifier.Length).SequenceEqual(identifier);
         }
 
         public int GetBitlength()

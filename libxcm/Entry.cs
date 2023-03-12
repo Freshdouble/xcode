@@ -20,10 +20,12 @@ namespace libxcm
             if (entryNode.Attributes["name"] == null)
             {
                 Name = "AnonymousEntry";
+                IsAnonymous = true;
             }
             else
             {
                 Name = entryNode.Attributes["name"].Value;
+                IsAnonymous = false;
             }
 
             if (entryNode.Attributes["visibility"] != null && entryNode.Attributes["visibility"].Value == "virtual")
@@ -173,6 +175,8 @@ namespace libxcm
         public bool Signed { get => Value.Signed; }
 
         public bool IsVisible { get; protected set; } = true;
+
+        public bool IsAnonymous { get; protected set; } = false;
 
         public IType Value { get; set; }
 

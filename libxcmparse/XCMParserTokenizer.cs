@@ -9,12 +9,15 @@ namespace xcmparser
 {
     public class XCMParserTokenizer : XCMTokenizer
     {
-        public XCMParserTokenizer(XmlDocument doc) : base(doc)
+        public XCMParserTokenizer(XmlNode root, IEnumerable<Symbol> symbols, Dictionary<string, Connection> inboundConnection, Dictionary<string, Connection> outboundConnection) : base(root, symbols, inboundConnection, outboundConnection)
         {
-        }
-
-        public XCMParserTokenizer(XmlElement root, XmlNamespaceManager mngr) : base(root, mngr)
-        {
+            foreach(var s in symbols)
+            {
+                if(s is not DataSymbol)
+                {
+                    throw new ArgumentException("The parser tokenizer only supports datasymbols");
+                }
+            }
         }
 
         public override Symbol BuildSymbol(XmlNode node)
@@ -22,14 +25,14 @@ namespace xcmparser
             return new DataSymbol(node);
         }
 
-        public override Command BuildCommand(XmlNode node)
+        public override Command BuildCommand(XmlNode node, Connection inbound, Connection outbound)
         {
-            return new DataCommand(node, knownSymbols);
+            return new DataCommand(node, knownSymbols, inbound, outbound);
         }
 
-        public override Message BuildMessage(XmlNode node)
+        public override Message BuildMessage(XmlNode node, Connection inbound, Connection outbound)
         {
-            return new DataMessage(node, knownSymbols);
+            return new DataMessage(node, knownSymbols, inbound, outbound);
         }
     }
 }

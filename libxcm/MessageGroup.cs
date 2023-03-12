@@ -8,6 +8,7 @@ namespace libxcm
 {
     public class MessageGroup
     {
+        /*
         protected readonly byte[] identifier;
         public MessageGroup(XmlNode groupNode, List<Symbol> knownSymbols, XCMTokenizer tokenizer)
         {
@@ -54,5 +55,6 @@ namespace libxcm
         }
 
         public MessageGroup Group = null;
+        */
     }
 }

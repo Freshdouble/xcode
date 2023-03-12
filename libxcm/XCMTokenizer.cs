@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace libxcm
 {
@@ -10,22 +11,62 @@ namespace libxcm
     {
         protected Dictionary<string, List<object>> compiledtokens = new Dictionary<string, List<object>>();
         protected List<Symbol> knownSymbols = new List<Symbol>();
-        public XCMTokenizer(XmlDocument doc) : this(doc.DocumentElement, new XmlNamespaceManager(doc.NameTable))
-        {
+        protected Connection inbound;
+        protected Connection outbound;
 
-        }
-        public XCMTokenizer(XmlElement root, XmlNamespaceManager mngr)
+        public XCMTokenizer(XmlNode root, IEnumerable<Symbol> symbols, Connection inboundConnection, Connection outboundConnection)
         {
-            mngr.AddNamespace("sps", "http://www.w3schools.com");
-            foreach(XmlNode token in root)
+            if (inboundConnection == null || outboundConnection == null)
             {
-                foreach(XmlNode t in token)
+                throw new ArgumentException("Each system must have a default input and output connection");
+            }
+
+            inbound = inboundConnection;
+            outbound = outboundConnection;
+
+            if (symbols != null)
+            {
+                AddKownSymbols(symbols);
+            }
+            foreach (XmlNode token in root)
+            {
+                if (token.NodeType != XmlNodeType.Comment)
                 {
-                    if(t.NodeType != XmlNodeType.Comment)
+                    foreach (XmlNode t in token)
                     {
-                        BuildToken(token, t);
+                        if (t.NodeType != XmlNodeType.Comment)
+                        {
+                            BuildToken(token, t);
+                        }
                     }
                 }
+            }
+        }
+        public XCMTokenizer(XmlNode root, IEnumerable<Symbol> symbols, Dictionary<string, Connection> inboundConnections, Dictionary<string, Connection> outboundConnections) : this(root, symbols, GetInboundConnectionFromXML(root, inboundConnections), GetOutboundConnectionFromXML(root, outboundConnections))
+        {
+        }
+
+        private static Connection GetInboundConnectionFromXML(XmlNode node, Dictionary<string, Connection> connections)
+        {
+            var defInput = node.SelectSingleNode("defaultInput");
+            if(defInput == null) return null;
+            var connName = defInput.InnerText;
+            if(connections.ContainsKey(connName)) return connections[connName];
+            else
+            {
+                return null;
+            }
+        }
+
+        private static Connection GetOutboundConnectionFromXML(XmlNode node, Dictionary<string, Connection> connections)
+        {
+            var defInput = node.SelectSingleNode("defaultOutput");
+            if (defInput == null) return null;
+            var connName = defInput.InnerText;
+            if (connections.ContainsKey(connName)) return connections[connName];
+            else
+            {
+                return null;
             }
         }
 
@@ -53,14 +94,22 @@ namespace libxcm
             }
         }
 
-        virtual public Message BuildMessage(XmlNode node)
+        virtual protected void AddKownSymbols(IEnumerable<Symbol> symbols)
         {
-            return new Message(node, knownSymbols);
+            foreach(var symb in symbols)
+            {
+                knownSymbols.Add(symb.Copy());
+            }
         }
 
-        virtual public Command BuildCommand(XmlNode node)
+        virtual public Message BuildMessage(XmlNode node, Connection inbound, Connection outbound)
         {
-            return new Command(node, knownSymbols);
+            return new Message(node, knownSymbols, inbound, outbound);
+        }
+
+        virtual public Command BuildCommand(XmlNode node, Connection inbound, Connection outbound)
+        {
+            return new Command(node, knownSymbols, inbound, outbound);
         }
 
         virtual public Symbol BuildSymbol(XmlNode node)
@@ -70,7 +119,8 @@ namespace libxcm
 
         virtual public MessageGroup BuildGroup(XmlNode node)
         {
-            return new MessageGroup(node, knownSymbols, this);
+            throw new NotImplementedException();
+            //return new MessageGroup(node, knownSymbols, this);
         }
         virtual protected void BuildToken(XmlNode parent, XmlNode node)
         {
@@ -90,22 +140,23 @@ namespace libxcm
                     {
                         compiledtokens.Add("message", new List<object>());
                     }
-                    compiledtokens["message"].Add(BuildMessage(node));
+                    compiledtokens["message"].Add(BuildMessage(node, inbound, outbound));
                     break;
                 case "command":
                     if (!compiledtokens.ContainsKey("command"))
                     {
                         compiledtokens.Add("command", new List<object>());
                     }
-                    compiledtokens["command"].Add(BuildCommand(node));
+                    compiledtokens["command"].Add(BuildCommand(node, inbound, outbound));
                     break;
+                    /*
                 case "Group":
                     MessageGroup group = BuildGroup(node);
                     foreach(Message msg in group.Messages)
                     {
                         compiledtokens["message"].Add(msg);
                     }
-                    break;
+                    break;*/
                 default:
                     break;
             }

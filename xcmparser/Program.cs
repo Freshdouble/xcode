@@ -23,7 +23,7 @@ namespace xcmparser
     {
         [Option('f', "xcmfile", Required = true, HelpText = "The xcm file with the package definitions")]
         public string Xcmfile { get; set; }
-        [Option('p', "pipe", Required = true, HelpText = "The pipe expression on how to receive the data")]
+        [Option('p', "pipe", HelpText = "The pipe expression on how to receive the data")]
         public string Pipe { get; set; }
         [Option('o', "outputinterface", HelpText = "Interface definition for the output UDP Server eg: 127.0.0.1:9000", Default = "127.0.0.1:9000")]
         public string OutputInterface { get; set; }
@@ -41,7 +41,7 @@ namespace xcmparser
     {
         static int Main(string[] args)
         {
-            using CancellationTokenSource cts = new CancellationTokenSource();
+            using CancellationTokenSource cts = new();
             Options opts = null;
             bool optionsValid = false;
             Task<bool> receiveTask = null;
@@ -66,7 +66,7 @@ namespace xcmparser
                     settings.Schemas.Add("http://www.w3schools.com", Path.Combine(assemblyDir, "xcm.xsd"));
                     settings.ValidationType = ValidationType.Schema;
 
-                    XmlReader reader = XmlReader.Create(opts.Xcmfile, settings);
+                    XmlReader reader = XmlReader.Create(opts.Xcmfile);
                     XmlDocument doc = new XmlDocument();
                     try
                     {
@@ -78,79 +78,16 @@ namespace xcmparser
                         Console.WriteLine(ex.Message);
                         return -1;
                     }
-                    using var client = new UdpTransmitter(null, IPEndPoint.Parse(opts.OutputInterface));
-                    using var pipe = new StreamPipe(opts.Pipe);
-                    Console.WriteLine("Starting interfaces");
-                    receiveTask = Task.Run(async () =>
+
+                    var tokenizerFactory = new XCMParserTokenizerFactory();
+                    var xcmdoc = new XCMDokument(doc, tokenizerFactory);
+
+                    while(true)
                     {
-                        XCMParserTokenizer tokenizer = new XCMParserTokenizer(doc);
-                        //using TelegrafUDPStream stream = new TelegrafUDPStream(new IPEndPoint(IPAddress.Any, 3550), IPEndPoint.Parse(args[1]));
-                        {
-                            pipe.StartService();
-                            client.StartService();
 
-                            Console.WriteLine("Upstream interface and downstream interface started");
+                    }
 
-                            var token = cts.Token;
-                            WebSocketStream wsstream = null;
-                            if(!string.IsNullOrEmpty(opts.websocketAddress))
-                            {
-                                try
-                                {
-                                    var endpoint = IPEndPoint.Parse(opts.websocketAddress);
-                                    wsstream = new WebSocketStream(endpoint);
-                                    Console.WriteLine($"Websocket server started on: {endpoint}");
-                                }
-                                catch(Exception ex)
-                                {
-                                    Console.WriteLine("Couldn't create websocket server");
-                                    Console.WriteLine(ex.Message);
-                                    wsstream = null;
-                                }
-                            }
-                            try
-                            {
-                                while (!token.IsCancellationRequested)
-                                {
-                                    try
-                                    {
-                                        var msg = await pipe.ReadMessageAsync(token);
-                                        string jsondata;
-                                        lock (opts)
-                                        {
-                                            ProcessMessage(msg.Data, tokenizer, client, out jsondata, opts);
-                                        }
-                                        if (!string.IsNullOrWhiteSpace(jsondata))
-                                        {
-                                            wsstream?.Send(jsondata);
-                                        }
-                                    }
-                                    catch (OperationCanceledException)
-                                    {
-
-                                    }
-                                    catch (AggregateException ex)
-                                    {
-                                        if (!(ex.InnerException is TimeoutException))
-                                        {
-                                            Console.WriteLine("Unkown exception:");
-                                            Console.WriteLine(ex);
-                                            cts.Cancel();
-                                            return false;
-                                        }
-                                    }
-                                }
-                                return true;
-                            }
-                            finally
-                            {
-                                wsstream?.Dispose();
-                            }
-                        }
-                    });
-                    XCMParserTokenizer tokenizer = new XCMParserTokenizer(doc);
-                    var token = cts.Token;
-                    bool verbosity = opts.Verbose;
+                    /*
                     Console.CancelKeyPress += (_, args) =>
                     {
                         args.Cancel = true;
@@ -200,7 +137,7 @@ namespace xcmparser
                             break;
                         }
                         Thread.Sleep(10);
-                    }
+                    }*/
                 }
                 else
                 {
@@ -378,9 +315,9 @@ namespace xcmparser
 
         static IEnumerable<KeyValuePair<DataSymbol, DataEntry>> GetCommandEntries(DataCommand msg)
         {
-            foreach (DataSymbol symbol in msg)
+            foreach (DataSymbol symbol in msg.Cast<DataSymbol>())
             {
-                foreach (DataEntry entry in symbol)
+                foreach (DataEntry entry in symbol.Cast<DataEntry>())
                 {
                     yield return new KeyValuePair<DataSymbol, DataEntry>(symbol, entry);
                 }

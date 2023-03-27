@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Xml;
 
 namespace libxcm
 {
     public class Connection : StreamPipe
     {
+        private object _lock = new object();
         public Connection(XmlNode node)
         {
             foreach(XmlNode stage in node)
@@ -18,7 +20,7 @@ namespace libxcm
                     if(stage.Name.ToLower() == "stage")
                     {
                         string className = "";
-                        List<string> parameters = new List<string>();
+                        Dictionary<string, string> parameters = new ();
                         foreach (XmlNode parameter in stage)
                         {
                             if (stage.Name.ToLower() == "stage")
@@ -29,7 +31,12 @@ namespace libxcm
                                         className = parameter.InnerText;
                                         break;
                                     case "parameter":
-                                        parameters.Add(parameter.InnerText);
+                                        string parameterName = parameter.Attributes["name"]?.Value;
+                                        if(string.IsNullOrWhiteSpace( parameterName ) )
+                                        {
+                                            throw new ArgumentException("The connection class parameter must have a name attribute.");
+                                        }
+                                        parameters.Add(parameterName, parameter.InnerText);
                                         break;
                                 }
                             }
@@ -50,10 +57,18 @@ namespace libxcm
 
         public IMessageConverter MessageConverter { get; set; } = new xcmparser.JsonConverter();
 
-        public void TransmitParsedData(Message msg)
+        public void TransmitData(Message msg)
         {
             var data = MessageConverter.ConvertToByteArray(msg);
-            PublishDownstreamData(new libconnection.Message(data));
+            TransmitMessage(new libconnection.Message(data));
+        }
+
+        public void TransmitDataSynchronized(Message msg)
+        {
+            lock(_lock)
+            {
+                TransmitData(msg);
+            }
         }
     }
 }

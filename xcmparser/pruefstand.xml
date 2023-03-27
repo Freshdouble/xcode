@@ -15,7 +15,8 @@
 		<outgoing>
 			<connection name="telegrafStream">
 				<stage>
-					<class>console</class>
+					<class>udp</class>
+					<parameter name="remoteendpoint">127.0.0.1:8000</parameter>
 				</stage>
 			</connection>
 		</outgoing>

@@ -36,9 +36,7 @@ namespace xcmparser
         {
             return new
             {
-                value = entry.GetValue<object>(),
-                isEntry = true,
-                isSymbol = false
+                value = entry.GetValue<object>()
             };
         }
         public static string ConvertDataToJSON(Message msg, bool pretty = false)
@@ -47,15 +45,8 @@ namespace xcmparser
             foreach (Symbol symbol in msg)
             {
                 string name = symbol.Name;
-                //int counter = 0;
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    /*
-                    do
-                    {
-                        name = "Anonymous" + counter;
-                        counter++;
-                    }while(tags.ContainsKey(name));*/
                     foreach (Entry entry in symbol)
                     {
                         tags.Add(entry.Name, EntryToExtendedJSON(entry));

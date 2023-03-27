@@ -238,7 +238,7 @@ namespace xcmparser
                                     //Send the command and return
                                     state = State.EditCommand;
                                     var data = selectedCommand.GetData();
-                                    stream.PublishDownstreamData(new libconnection.Message(data));
+                                    stream.TransmitMessage(new libconnection.Message(data));
                                 }
                                 else
                                 {
@@ -346,7 +346,7 @@ namespace xcmparser
                     {
                         var json = JsonConverter.ConvertDataToJSON(msg);
                         jsondata = json;
-                        stream.PublishUpstreamData(new libconnection.Message(Encoding.UTF8.GetBytes(json)));
+                        stream.TransmitMessage(new libconnection.Message(Encoding.UTF8.GetBytes(json)));
                     }
                 }
             }

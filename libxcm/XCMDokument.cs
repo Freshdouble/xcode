@@ -31,7 +31,6 @@ namespace libxcm
                     throw new ArgumentException("Each connection element must have a unique name");
                 }
                 var connection = new Connection(incon);
-                connection.StartService();
                 incommingConnections.Add(connName, connection);
             }
 
@@ -47,7 +46,6 @@ namespace libxcm
                     throw new ArgumentException("Each connection element must have a unique name");
                 }
                 var connection = new Connection(outcon);
-                connection.StartService();
                 outgoingConnections.Add(connName, connection);
             }
 

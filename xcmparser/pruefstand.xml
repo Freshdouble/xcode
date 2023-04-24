@@ -5,7 +5,7 @@
 			<connection name="testboardSerial" type="input">
 				<stage>
 					<class>serial</class>
-					<parameter name="port">COM6</parameter>
+					<parameter name="port">COM5</parameter>
 				</stage>
 				<stage>
 					<class>smp</class>
@@ -15,8 +15,12 @@
 		<outgoing>
 			<connection name="telegrafStream">
 				<stage>
+					<class>console</class>
+				</stage>
+				<stage>
 					<class>udp</class>
-					<parameter name="remoteendpoint">127.0.0.1:8000</parameter>
+					<parameter name="remoteendpoint">10.0.1.131:8000</parameter>
+					<parameter name="localendpoint">0.0.0.0:7000</parameter>
 				</stage>
 			</connection>
 		</outgoing>
@@ -27,11 +31,21 @@
 		<defaultInput>testboardSerial</defaultInput>
 		<defaultOutput>telegrafStream</defaultOutput>
 		<messages>
-			<message name="Status" identifier="$" identfiierType="string" idoffset="1">
+			<message name="Electric" identifier="0x01">
 				<symbol>
-					<entry name="Temperature" type="uint" bitlength="16"/>
+					<entry name="Voltage" type="float"/>
+					<entry name="Current" type="float"/>
+					<entry name="Power" type="float"/>
+					<entry name="Energy" type="float"/>
 				</symbol>
 			</message>
 		</messages>
+		<commands>
+			<command name="ESC" identifier="0x10">
+				<symbol>
+					<entry name="escvalue" type="uint" bitlength="16" value="1000"/>
+				</symbol>
+			</command>
+		</commands>
 	</system>
 </spacesystem>

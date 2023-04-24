@@ -43,7 +43,7 @@ namespace libxcmparse.DataObjects
         public void ParseMessage(IEnumerable<byte> message)
         {
             int offset = 0;
-            byte[] msgArray = message as byte[] ?? message.ToArray();
+            byte[] msgArray = message.Skip(IDByteLength + IDOffset).ToArray();
             foreach (var symbol in this)
             {
                 if(offset >= msgArray.Length)

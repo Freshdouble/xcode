@@ -84,7 +84,7 @@ namespace xcmparser
 
                     while(true)
                     {
-
+                        Thread.Sleep(1000);
                     }
 
                     /*

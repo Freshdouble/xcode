@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Xml;
 
 namespace libxcmparse.DataObjects
@@ -23,6 +24,15 @@ namespace libxcmparse.DataObjects
             {
                 symb.Sibblings = sibblings;
             }
+
+            outbound.MessageReceived += Outbound_MessageReceived;
+        }
+
+        private void Outbound_MessageReceived(object sender, libconnection.MessageEventArgs e)
+        {
+            xcmparser.JsonConverter.GetDataFromJson(e.Message, this);
+            var msg = new libconnection.Message(GetData());
+            inbound.TransmitMessage(msg);
         }
 
         public byte[] GetData()

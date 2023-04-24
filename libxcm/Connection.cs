@@ -1,9 +1,7 @@
 ﻿using libconnection;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading;
+using System.Linq;
 using System.Xml;
 
 namespace libxcm
@@ -11,9 +9,14 @@ namespace libxcm
     public class Connection : StreamPipe
     {
         private object _lock = new object();
-        public Connection(XmlNode node)
+        public Connection(XmlNode node, bool reverse = false)
         {
-            foreach(XmlNode stage in node)
+            var iterator = node.GetChildsOrdered();
+            if(reverse)
+            {
+                iterator = iterator.Reverse();
+            }
+            foreach (XmlNode stage in iterator)
             {
                 if(stage.NodeType != XmlNodeType.Comment)
                 {

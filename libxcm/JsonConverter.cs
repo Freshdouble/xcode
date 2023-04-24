@@ -1,4 +1,5 @@
 ﻿using libxcm;
+using libxcm.JsonTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace xcmparser
                 value = entry.GetValue<object>()
             };
         }
-        public static string ConvertDataToJSON(Message msg, bool pretty = false)
+        public static string ConvertDataToJSON(Message msg, bool pretty = true)
         {
             Dictionary<string, object> tags = new Dictionary<string, object>();
             foreach (Symbol symbol in msg)
@@ -72,6 +73,23 @@ namespace xcmparser
         public byte[] ConvertToByteArray(Message msg)
         {
             return ConvertDataToJSONByte(msg);
+        }
+
+        public static void GetDataFromJson(IEnumerable<byte>data, Command com)
+        {
+            GetDataFromJson(data as byte[] ?? data.ToArray(), com);
+        }
+
+        public static void GetDataFromJson(byte[] data, Command com)
+        {
+            var str = Encoding.UTF8.GetString(data);
+            GetDataFromJson(str, com);
+        }
+
+        public static void GetDataFromJson(string json, Command com)
+        {
+            var jsoncommand = JsonSerializer.Deserialize<JsonCommand>(json);
+            jsoncommand?.FillCommand(com);
         }
     }
 }

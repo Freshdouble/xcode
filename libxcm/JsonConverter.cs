@@ -40,7 +40,7 @@ namespace xcmparser
                 value = entry.GetValue<object>()
             };
         }
-        public static string ConvertDataToJSON(Message msg, bool pretty = true)
+        public static string ConvertDataToJSON(Message msg, bool pretty = false)
         {
             Dictionary<string, object> tags = new Dictionary<string, object>();
             foreach (Symbol symbol in msg)
@@ -67,7 +67,7 @@ namespace xcmparser
                 MessageName = msg.Name,
                 Fields = tags,
                 isExtended = true
-            }, options);
+            }, options) + "\n";
         }
 
         public byte[] ConvertToByteArray(Message msg)

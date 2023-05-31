@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Xml;
 
 namespace libxcm
@@ -9,7 +10,7 @@ namespace libxcm
     public class Connection : StreamPipe
     {
         private object _lock = new object();
-        public Connection(XmlNode node, bool reverse = false)
+        public Connection(XmlNode node, CancellationToken token, bool reverse = false) : base(token)
         {
             var iterator = node.GetChildsOrdered();
             if(reverse)

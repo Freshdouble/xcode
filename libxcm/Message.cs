@@ -136,7 +136,7 @@ namespace libxcm
                 foreach (string token in tokenized)
                 {
                     int value = Convert.ToInt32(token, 16);
-                    id.Insert(0, (byte)value);
+                    id.Add((byte)value);
                 }
             }
             catch(FormatException)

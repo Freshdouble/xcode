@@ -80,12 +80,14 @@ namespace xcmparser
                     }
 
                     var tokenizerFactory = new XCMParserTokenizerFactory();
-                    var xcmdoc = new XCMDokument(doc, tokenizerFactory);
+                    var xcmdoc = new XCMDokument(doc, tokenizerFactory, cts);
 
-                    while(true)
+                    while(!cts.Token.IsCancellationRequested)
                     {
                         Thread.Sleep(1000);
                     }
+
+                    Thread.Sleep(1000);
 
                     /*
                     Console.CancelKeyPress += (_, args) =>

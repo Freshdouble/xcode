@@ -37,7 +37,11 @@ namespace libxcmparse.DataObjects
 
         private void Inbound_MessageReceived(object sender, libconnection.MessageEventArgs e)
         {
-            ParseMessage(e.Message);
+            var msg = e.Message;
+            if (Match(msg))
+            {
+                ParseMessage(msg);
+            }
         }
 
         public void ParseMessage(IEnumerable<byte> message)

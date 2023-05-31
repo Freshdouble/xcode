@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Xml;
 
 namespace libxcm
@@ -12,12 +13,12 @@ namespace libxcm
 
         private Dictionary<string, Connection> incommingConnections = new Dictionary<string, Connection>();
         private Dictionary<string, Connection> outgoingConnections = new Dictionary<string, Connection>();
-        public XCMDokument(XmlDocument doc, ITokenizerFactory factory) : this(doc.DocumentElement, factory)
+        public XCMDokument(XmlDocument doc, ITokenizerFactory factory, CancellationTokenSource cts) : this(doc.DocumentElement, factory, cts)
         {
 
         }
 
-        public XCMDokument(XmlElement root, ITokenizerFactory factory)
+        public XCMDokument(XmlElement root, ITokenizerFactory factory, CancellationTokenSource cts)
         {
             foreach (XmlElement incon in root.SelectNodes("/spacesystem/connections/incomming/connection")) //Read all incomming connections and generate connection elements from it
             {
@@ -30,7 +31,7 @@ namespace libxcm
                 {
                     throw new ArgumentException("Each connection element must have a unique name");
                 }
-                var connection = new Connection(incon);
+                var connection = new Connection(incon, cts.Token);
                 incommingConnections.Add(connName, connection);
             }
 
@@ -45,7 +46,7 @@ namespace libxcm
                 {
                     throw new ArgumentException("Each connection element must have a unique name");
                 }
-                var connection = new Connection(outcon, true);
+                var connection = new Connection(outcon, cts.Token, true);
                 outgoingConnections.Add(connName, connection);
             }
 

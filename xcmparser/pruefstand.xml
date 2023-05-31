@@ -2,10 +2,10 @@
 <spacesystem>
 	<connections>
 		<incomming>
-			<connection name="testboardSerial" type="input">
+			<connection name="sharkSerial" type="input">
 				<stage>
-					<class>serial</class>
-					<parameter name="port">COM5</parameter>
+					<class>fileinput</class>
+					<parameter name="file">LOGFILE.BIN</parameter>
 				</stage>
 				<stage>
 					<class>smp</class>
@@ -19,7 +19,7 @@
 				</stage>
 				<stage>
 					<class>udp</class>
-					<parameter name="remoteendpoint">10.0.1.131:8000</parameter>
+					<parameter name="remoteendpoint">10.0.1.131:8094</parameter>
 					<parameter name="localendpoint">0.0.0.0:7000</parameter>
 				</stage>
 			</connection>
@@ -27,25 +27,31 @@
 	</connections>
 	<symbols>
 	</symbols>
-	<system name="testboard">
-		<defaultInput>testboardSerial</defaultInput>
+	<system name="shark">
+		<defaultInput>sharkSerial</defaultInput>
 		<defaultOutput>telegrafStream</defaultOutput>
 		<messages>
-			<message name="Electric" identifier="0x01">
+			<message name="Servo0" identifier="0x0100">
 				<symbol>
-					<entry name="Voltage" type="float"/>
-					<entry name="Current" type="float"/>
-					<entry name="Power" type="float"/>
-					<entry name="Energy" type="float"/>
+					<entry name="timestamp" type="uint" bitlength="32"/>
+					<entry name="voltage" type="float"/>
+					<entry name="current" type="float"/>
+					<entry name="powerStageTemperature" type="float"/>
+					<entry name="temperature" type="float"/>
+					<entry name="powerdraw" type="float"/>
+					<entry name="position" type="float"/>
+				</symbol>
+			</message>
+			<message name="Accelerometer" identifier="0x0200">
+				<symbol>
+					<entry name="timestamp" type="uint" bitlength="32"/>
+					<entry name="x" type="float"/>
+					<entry name="y" type="float"/>
+					<entry name="z" type="float"/>
 				</symbol>
 			</message>
 		</messages>
 		<commands>
-			<command name="ESC" identifier="0x10">
-				<symbol>
-					<entry name="escvalue" type="uint" bitlength="16" value="1000"/>
-				</symbol>
-			</command>
 		</commands>
 	</system>
 </spacesystem>

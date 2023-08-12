@@ -61,6 +61,7 @@ namespace libxcm
                 if (systemname == null || tokenizers.ContainsKey(systemname))
                     throw new ArgumentException("A system must have a unique name");
                 var tokenizer = factory.BuildTokenizer(systemNode, symbols, incommingConnections, outgoingConnections);
+                tokenizer.Name = systemname;
                 tokenizers.Add(systemname, tokenizer);
             }
         }

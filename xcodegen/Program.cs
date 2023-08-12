@@ -11,6 +11,7 @@ using Scriban.Syntax;
 using System.Xml.Schema;
 using System.Reflection;
 using CommandLine;
+using System.Threading;
 
 namespace xcodegen
 {
@@ -18,12 +19,12 @@ namespace xcodegen
     {
         [Option('f', "xcmfile", Required = true, HelpText = "The xcm file with the package definitions")]
         public string Xcmfile { get; set; }
-        [Option('t', "templatefolder", Required = false, HelpText = "The folder that contains the templates")]
+        [Option('t', "templatefolder", Required = true, HelpText = "The folder that contains the templates")]
         public string TemplateFolder { get; set; } = string.Empty;
-        [Option('o', "outputfolder", Required = false, HelpText = "The folder where to write the output files")]
+        [Option('o', "outputfolder", Required = true, HelpText = "The folder where to write the output files")]
         public string OutputFolder { get; set; } = string.Empty;
         [Option('n', "filename", Required = false, HelpText = "The basefilename (without extension) for the generated output files", Default = "xcode")]
-        public string FileName { get; set; }
+        public string FileName { get; set; } = "xcode";
         [Option("swap", HelpText = "Swap messages and commands in the output")]
         public bool Swap { get; set; } = false;
     }
@@ -100,69 +101,75 @@ namespace xcodegen
                 }
 
                 TypeGenerator typegenerator = new TypeGenerator(Path.Combine(assemblyDir, "cdtypes.xml"));
-                XCMTokenizer tokenizer = new XCMTokenizer(doc);
 
-                int maxmessagesize = 0;
-                int maxcommandsize = 0;
+                using CancellationTokenSource cts = new CancellationTokenSource();
 
-                foreach (var message in tokenizer.GetObjects<Message>())
+                var tokenizerFactory = new XCMFactory();
+                var xcmdoc = new XCMDokument(doc, tokenizerFactory, cts);
+
+                foreach(var tokenizer in xcmdoc.GetTokenizers())
                 {
-                    if (message.GetMaximumByteLength() > maxmessagesize)
+                    int maxmessagesize = 0;
+                    int maxcommandsize = 0;
+                    foreach (var message in tokenizer.GetObjects<Message>())
                     {
-                        maxmessagesize = message.GetMaximumByteLength();
-                    }
-                }
-
-                foreach (var cmd in tokenizer.GetObjects<Command>())
-                {
-                    if (cmd.GetMaximumByteLength() > maxcommandsize)
-                    {
-                        maxcommandsize = cmd.GetMaximumByteLength();
-                    }
-                }
-
-                object messages;
-                object commands;
-
-                if(opts.Swap)
-                {
-                    commands = CreateTemplateObject(tokenizer.GetObjects<Message>().ToList(), typegenerator);
-                    messages = CreateTemplateObject(tokenizer.GetObjects<Command>().Cast<Message>().ToList(), typegenerator);
-                }
-                else
-                {
-                    messages = CreateTemplateObject(tokenizer.GetObjects<Message>().ToList(), typegenerator);
-                    commands = CreateTemplateObject(tokenizer.GetObjects<Command>().Cast<Message>().ToList(), typegenerator);
-                }
-
-                foreach (string filepath in Directory.GetFiles(templateFolder))
-                {
-                    if (Path.GetExtension(filepath) == ".sbntxt")
-                    {
-                        string filename = Path.GetFileName(filepath);
-                        string extension = filename.Substring(filename.IndexOf('.'), filename.LastIndexOf('.') - filename.IndexOf('.'));
-                        string outputFileName = opts.FileName + extension;
-                        string template = filepath;
-                        var tmp = Template.Parse(File.ReadAllText(template), template);
-                        var parsed = tmp.Render(new
+                        if(message.GetMaximumByteLength() > maxmessagesize)
                         {
-                            messages,
-                            commands,
-                            maxmessagesize,
-                            maxcommandsize,
-                            outputfilename = outputFileName,
-                            currentdate = DateTime.Now
-                        });
-                        string f = Path.Combine(outputFolder, outputFileName);
-                        File.WriteAllText(f, parsed);
-                        Console.WriteLine("Generated file: " + f);
+                            maxmessagesize= message.GetMaximumByteLength();
+                        }
+                    }
+                    foreach(var command in tokenizer.GetObjects<Command>())
+                    {
+                        if(command.GetMaximumByteLength() > maxcommandsize)
+                        {
+                            maxcommandsize= command.GetMaximumByteLength();
+                        }
+                    }
+
+                    object messages;
+                    object commands;
+
+                    if (opts.Swap)
+                    {
+                        commands = CreateTemplateObject(tokenizer.GetObjects<Message>().ToList(), typegenerator);
+                        messages = CreateTemplateObject(tokenizer.GetObjects<Command>().Cast<Message>().ToList(), typegenerator);
                     }
                     else
                     {
-                        string f = Path.Combine(outputFolder, Path.GetFileName(filepath));
-                        File.Copy(filepath, f);
-                        Console.WriteLine("Copied file: " + f);
+                        messages = CreateTemplateObject(tokenizer.GetObjects<Message>().ToList(), typegenerator);
+                        commands = CreateTemplateObject(tokenizer.GetObjects<Command>().Cast<Message>().ToList(), typegenerator);
                     }
+
+                    foreach (string filepath in Directory.GetFiles(templateFolder))
+                    {
+                        if (Path.GetExtension(filepath) == ".sbntxt")
+                        {
+                            string filename = Path.GetFileName(filepath);
+                            string extension = filename.Substring(filename.IndexOf('.'), filename.LastIndexOf('.') - filename.IndexOf('.'));
+                            string outputFileName = opts.FileName + "_" + tokenizer.Name + extension;
+                            string template = filepath;
+                            var tmp = Template.Parse(File.ReadAllText(template), template);
+                            var parsed = tmp.Render(new
+                            {
+                                messages,
+                                commands,
+                                maxmessagesize,
+                                maxcommandsize,
+                                outputfilename = outputFileName,
+                                currentdate = DateTime.Now
+                            });
+                            string f = Path.Combine(outputFolder, outputFileName);
+                            File.WriteAllText(f, parsed);
+                            Console.WriteLine("Generated file: " + f);
+                        }
+                        else
+                        {
+                            string f = Path.Combine(outputFolder, Path.GetFileName(filepath));
+                            File.Copy(filepath, f);
+                            Console.WriteLine("Copied file: " + f);
+                        }
+                    }
+
                 }
                 return 0;
             }

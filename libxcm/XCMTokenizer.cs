@@ -46,6 +46,8 @@ namespace libxcm
         {
         }
 
+        public string Name { get; set; } = string.Empty;
+
         private static Connection GetInboundConnectionFromXML(XmlNode node, Dictionary<string, Connection> connections)
         {
             var defInput = node.SelectSingleNode("defaultInput");

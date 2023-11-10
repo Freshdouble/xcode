@@ -28,9 +28,9 @@ namespace xcmparser
             };
         }
 
-        public static byte[] ConvertDataToJSONByte(Message msg)
+        public static byte[] ConvertDataToJSONByte(Message msg, ref string msgName)
         {
-            return Encoding.UTF8.GetBytes(ConvertDataToJSON(msg));
+            return Encoding.UTF8.GetBytes(ConvertDataToJSON(msg, ref msgName));
         }
 
         public static object EntryToExtendedJSON(Entry entry)
@@ -40,7 +40,7 @@ namespace xcmparser
                 value = entry.GetValue<object>()
             };
         }
-        public static string ConvertDataToJSON(Message msg, bool pretty = false)
+        public static string ConvertDataToJSON(Message msg, ref string msgName, bool pretty = false)
         {
             Dictionary<string, object> tags = new Dictionary<string, object>();
             foreach (Symbol symbol in msg)
@@ -61,6 +61,7 @@ namespace xcmparser
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.Converters.Add(new BigIntegerConverter());
             options.WriteIndented = pretty;
+            msgName = msg.Name;
             return JsonSerializer.Serialize(new
             {
                 Type = "receiveddata",
@@ -72,7 +73,20 @@ namespace xcmparser
 
         public byte[] ConvertToByteArray(Message msg)
         {
-            return ConvertDataToJSONByte(msg);
+            string dummy = string.Empty;
+            return ConvertDataToJSONByte(msg, ref dummy);
+        }
+
+        public byte[] ConvertToByteArray(Message msg, out object additionalData)
+        {
+            string name = string.Empty;
+            additionalData = null;
+            var output = ConvertDataToJSONByte(msg, ref name);
+            if(!string.IsNullOrWhiteSpace(name))
+            {
+                additionalData = name;
+            }
+            return output;
         }
 
         public static void GetDataFromJson(IEnumerable<byte>data, Command com)

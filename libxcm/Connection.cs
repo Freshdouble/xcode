@@ -63,8 +63,13 @@ namespace libxcm
 
         public void TransmitData(Message msg)
         {
-            var data = MessageConverter.ConvertToByteArray(msg);
-            TransmitMessage(new libconnection.Message(data));
+            object additionalData;
+            var data = MessageConverter.ConvertToByteArray(msg, out additionalData);
+            var convertedMsg = new libconnection.Message(data)
+            {
+                CustomObject = additionalData
+            };
+            TransmitMessage(convertedMsg);
         }
 
         public void TransmitDataSynchronized(Message msg)

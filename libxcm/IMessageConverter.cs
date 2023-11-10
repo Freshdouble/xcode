@@ -9,5 +9,6 @@ namespace libxcm
     public interface IMessageConverter
     {
         public byte[] ConvertToByteArray(Message msg);
+        public byte[] ConvertToByteArray(Message msg, out object additionalData);
     }
 }

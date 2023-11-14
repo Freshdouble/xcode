@@ -7,7 +7,7 @@ namespace libxcm
 {
     public class Command : Message
     {
-        public Command(XmlNode commandNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound) : base(commandNode, knownSymbols, inbound, outbound)
+        public Command(XmlNode commandNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound, string systemName) : base(commandNode, knownSymbols, inbound, outbound, systemName)
         {
         }
 

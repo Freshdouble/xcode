@@ -19,8 +19,9 @@ namespace libxcmparse.DataObjects
         {
             return new DataEntry(entryNode);
         }
-        public DataMessage(XmlNode messageNode, List<Symbol> knownSymbols, Connection inboundConnection, Connection outboundConnection) : base(messageNode, knownSymbols, SymbolFactory, EntryFactory, inboundConnection, outboundConnection)
+        public DataMessage(XmlNode messageNode, List<Symbol> knownSymbols, Connection inboundConnection, Connection outboundConnection, string systemName) : base(messageNode, knownSymbols, SymbolFactory, EntryFactory, inboundConnection, outboundConnection)
         {
+            SystemName = systemName;
             List<DataSymbol> sibblings = new List<DataSymbol>();
             foreach (DataSymbol symb in this)
             {

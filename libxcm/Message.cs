@@ -28,9 +28,11 @@ namespace libxcm
             return new Entry(entryNode);
         }
 
-        public Message(XmlNode messageNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound) : this(messageNode, knownSymbols, SymbolFactory, EntryFactory, inbound, outbound)
+        public string SystemName{get;set;}
+
+        public Message(XmlNode messageNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound, string systemName) : this(messageNode, knownSymbols, SymbolFactory, EntryFactory, inbound, outbound)
         {
-            
+            SystemName = systemName;
         }
 
         protected Message(XmlNode messageNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory, Connection inbound, Connection outbound)

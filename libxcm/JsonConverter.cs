@@ -64,6 +64,7 @@ namespace xcmparser
             msgName = msg.Name;
             return JsonSerializer.Serialize(new
             {
+                msg.SystemName,
                 Type = "receiveddata",
                 MessageName = msg.Name,
                 Fields = tags,

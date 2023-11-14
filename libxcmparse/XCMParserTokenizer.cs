@@ -25,14 +25,14 @@ namespace xcmparser
             return new DataSymbol(node);
         }
 
-        public override Command BuildCommand(XmlNode node, Connection inbound, Connection outbound)
+        public override Command BuildCommand(XmlNode node, Connection inbound, Connection outbound, string systemname)
         {
-            return new DataCommand(node, knownSymbols, inbound, outbound);
+            return new DataCommand(node, knownSymbols, inbound, outbound, systemname);
         }
 
-        public override Message BuildMessage(XmlNode node, Connection inbound, Connection outbound)
+        public override Message BuildMessage(XmlNode node, Connection inbound, Connection outbound, string systemname)
         {
-            return new DataMessage(node, knownSymbols, inbound, outbound);
+            return new DataMessage(node, knownSymbols, inbound, outbound, systemname);
         }
     }
 }

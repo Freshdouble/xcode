@@ -28,6 +28,7 @@ namespace libxcm
             {
                 AddKownSymbols(symbols);
             }
+            string systenName = root.Attributes["name"]?.Value ?? "";
             foreach (XmlNode token in root)
             {
                 if (token.NodeType != XmlNodeType.Comment)
@@ -36,7 +37,7 @@ namespace libxcm
                     {
                         if (t.NodeType != XmlNodeType.Comment)
                         {
-                            BuildToken(token, t);
+                            BuildToken(token, t, systenName);
                         }
                     }
                 }
@@ -104,14 +105,14 @@ namespace libxcm
             }
         }
 
-        virtual public Message BuildMessage(XmlNode node, Connection inbound, Connection outbound)
+        virtual public Message BuildMessage(XmlNode node, Connection inbound, Connection outbound, string systemName)
         {
-            return new Message(node, knownSymbols, inbound, outbound);
+            return new Message(node, knownSymbols, inbound, outbound, systemName);
         }
 
-        virtual public Command BuildCommand(XmlNode node, Connection inbound, Connection outbound)
+        virtual public Command BuildCommand(XmlNode node, Connection inbound, Connection outbound, string systemName)
         {
-            return new Command(node, knownSymbols, inbound, outbound);
+            return new Command(node, knownSymbols, inbound, outbound, systemName);
         }
 
         virtual public Symbol BuildSymbol(XmlNode node)
@@ -124,7 +125,7 @@ namespace libxcm
             throw new NotImplementedException();
             //return new MessageGroup(node, knownSymbols, this);
         }
-        virtual protected void BuildToken(XmlNode parent, XmlNode node)
+        virtual protected void BuildToken(XmlNode parent, XmlNode node, string systemName)
         {
             switch(node.Name.ToLower())
             {
@@ -142,14 +143,14 @@ namespace libxcm
                     {
                         compiledtokens.Add("message", new List<object>());
                     }
-                    compiledtokens["message"].Add(BuildMessage(node, inbound, outbound));
+                    compiledtokens["message"].Add(BuildMessage(node, inbound, outbound, systemName));
                     break;
                 case "command":
                     if (!compiledtokens.ContainsKey("command"))
                     {
                         compiledtokens.Add("command", new List<object>());
                     }
-                    compiledtokens["command"].Add(BuildCommand(node, inbound, outbound));
+                    compiledtokens["command"].Add(BuildCommand(node, inbound, outbound, systemName));
                     break;
                     /*
                 case "Group":

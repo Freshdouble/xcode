@@ -9,8 +9,9 @@ namespace libxcmparse.DataObjects
 {
     public class DataCommand : Command
     {
-        public DataCommand(XmlNode commandNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound) : this(commandNode, knownSymbols, DataMessage.SymbolFactory, DataMessage.EntryFactory, inbound, outbound)
+        public DataCommand(XmlNode commandNode, List<Symbol> knownSymbols, Connection inbound, Connection outbound, string systemName) : this(commandNode, knownSymbols, DataMessage.SymbolFactory, DataMessage.EntryFactory, inbound, outbound)
         {
+            SystemName = systemName;
         }
 
         protected DataCommand(XmlNode commandNode, List<Symbol> knownSymbols, Func<XmlNode, bool, Symbol> symbolFactory, Func<XmlNode, Entry> EntryFactory, Connection inbound, Connection outbound) : base(commandNode, knownSymbols, symbolFactory, EntryFactory, inbound, outbound)

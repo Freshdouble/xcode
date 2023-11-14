@@ -62,12 +62,12 @@ namespace xcmparser
 
                 if (optionsValid && opts != null)
                 {
-                    XmlReaderSettings settings = new XmlReaderSettings();
+                    XmlReaderSettings settings = new();
                     settings.Schemas.Add("http://www.w3schools.com", Path.Combine(assemblyDir, "xcm.xsd"));
                     settings.ValidationType = ValidationType.Schema;
 
                     XmlReader reader = XmlReader.Create(opts.Xcmfile);
-                    XmlDocument doc = new XmlDocument();
+                    XmlDocument doc = new();
                     try
                     {
                         doc.Load(reader);
@@ -179,7 +179,7 @@ namespace xcmparser
             var commands = tokenizer.GetObjects<DataCommand>();
             IEnumerable<KeyValuePair<DataSymbol, DataEntry>> enrylist = null;
             DataCommand selectedCommand = null;
-            KeyValuePair<DataSymbol, DataEntry> selectedEntry = new KeyValuePair<DataSymbol, DataEntry>(null, null);
+            KeyValuePair<DataSymbol, DataEntry> selectedEntry = new (null, null);
             try
             {
                 while (running)
@@ -338,15 +338,15 @@ namespace xcmparser
                 {
                     msg.ParseMessage(processData.Skip(msg.IDByteLength + msg.IDOffset));
                     ret = true;
-
+                    string name = string.Empty;
                     if (options != null && options.Verbose)
                     {
-                        var json = JsonConverter.ConvertDataToJSON(msg, true);
+                        var json = JsonConverter.ConvertDataToJSON(msg, ref name, true);
                         Console.WriteLine(json);
                     }
                     if (options == null || !options.NoForward)
                     {
-                        var json = JsonConverter.ConvertDataToJSON(msg);
+                        var json = JsonConverter.ConvertDataToJSON(msg, ref name);
                         jsondata = json;
                         stream.TransmitMessage(new libconnection.Message(Encoding.UTF8.GetBytes(json)));
                     }

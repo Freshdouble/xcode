@@ -21,9 +21,9 @@ namespace xcmparser
     {
 
         private readonly UdpClient client;
-        private Task task;
-        private CancellationTokenSource cts = new CancellationTokenSource();
-        private ConcurrentQueue<byte[]> receivedData = new ConcurrentQueue<byte[]>();
+        private readonly Task task;
+        private readonly CancellationTokenSource cts = new ();
+        private readonly ConcurrentQueue<byte[]> receivedData = new ();
         private bool isDisposed = false;
 
         public event EventHandler ReceivedData;
@@ -31,9 +31,10 @@ namespace xcmparser
         {
             client = new UdpClient(Receiveendpoint);
             client.Connect(transmitEndpoint);
+            var token = cts.Token;
             task = Task.Factory.StartNew(async () =>
             {
-                while (!cts.IsCancellationRequested)
+                while (!token.IsCancellationRequested)
                 {
                     try
                     {
@@ -53,7 +54,7 @@ namespace xcmparser
 
                     }
                 }
-            }, cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         ~TelegrafUDPStream()
@@ -63,24 +64,23 @@ namespace xcmparser
 
         public byte[] ReadMessage()
         {
-            byte[] ret;
-            if(receivedData.TryDequeue(out ret))
+            if (receivedData.TryDequeue(out byte[] ret))
             {
                 return ret;
             }
             else
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
         }
 
         public async Task<byte[]> ReadMessageAsync()
         {
-            TaskCompletionSource<byte[]> tcs = new TaskCompletionSource<byte[]>();
-            EventHandler f = (sender, args) =>
+            TaskCompletionSource<byte[]> tcs = new();
+            void f(object sender, EventArgs args)
             {
                 tcs.SetResult(ReadMessage());
-            };
+            }
             ReceivedData += f;
             byte[] ret = await tcs.Task;
             ReceivedData -= f;
@@ -89,7 +89,8 @@ namespace xcmparser
 
         public void SendData(DataMessage msg)
         {
-            byte[] data = JsonConverter.ConvertDataToJSONByte(msg);
+            string name = msg.Name;
+            byte[] data = JsonConverter.ConvertDataToJSONByte(msg, ref name);
             client.Send(data, data.Length);
         }
 
@@ -103,6 +104,7 @@ namespace xcmparser
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             if(!isDisposed)
             {
                 cts?.Cancel();

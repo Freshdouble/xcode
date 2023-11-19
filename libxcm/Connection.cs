@@ -9,8 +9,8 @@ namespace libxcm
 {
     public class Connection : StreamPipe
     {
-        private object _lock = new object();
-        public Connection(XmlNode node, CancellationToken token, bool reverse = false) : base(token)
+        private readonly object _lock = new ();
+        public Connection(XmlNode node, bool reverse = false) : base()
         {
             var iterator = node.GetChildsOrdered();
             if(reverse)
@@ -63,8 +63,7 @@ namespace libxcm
 
         public void TransmitData(Message msg)
         {
-            object additionalData;
-            var data = MessageConverter.ConvertToByteArray(msg, out additionalData);
+            var data = MessageConverter.ConvertToByteArray(msg, out object additionalData);
             var convertedMsg = new libconnection.Message(data)
             {
                 CustomObject = additionalData

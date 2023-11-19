@@ -39,12 +39,11 @@ namespace xcmparser
     }
     class Program
     {
-        static int Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             using CancellationTokenSource cts = new();
             Options opts = null;
             bool optionsValid = false;
-            Task<bool> receiveTask = null;
 
             string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string workingDir = Directory.GetCurrentDirectory();
@@ -80,66 +79,9 @@ namespace xcmparser
                     }
 
                     var tokenizerFactory = new XCMParserTokenizerFactory();
-                    var xcmdoc = new XCMDokument(doc, tokenizerFactory, cts);
+                    var xcmdoc = new XCMDokument(doc, tokenizerFactory);
 
-                    while(!cts.Token.IsCancellationRequested)
-                    {
-                        Thread.Sleep(1000);
-                    }
-
-                    Thread.Sleep(1000);
-
-                    /*
-                    Console.CancelKeyPress += (_, args) =>
-                    {
-                        args.Cancel = true;
-                        cts.Cancel();
-                        Thread.Sleep(1300);
-                    };
-                    Console.WriteLine("Startup successfull");
-                    while (!token.IsCancellationRequested)
-                    {
-                        if (opts.EnableInterace && Console.KeyAvailable)
-                        {
-                            var key = Console.ReadKey(true).Key;
-                            switch (key)
-                            {
-                                case ConsoleKey.T:
-                                    bool enableInterface = false;
-                                    lock (opts)
-                                    {
-                                        enableInterface = opts.EnableInterace;
-                                    }
-                                    if (enableInterface)
-                                    {
-                                        lock (opts)
-                                        {
-                                            opts.Verbose = false;
-                                        }
-                                        CommandEditStateMachine(tokenizer, pipe);
-                                        Console.Clear();
-                                        lock (opts)
-                                        {
-                                            opts.Verbose = verbosity;
-                                        }
-                                    }
-                                    break;
-                            }
-                        }
-                        if(receiveTask.IsCompleted)
-                        {
-                            if(receiveTask.Exception != null)
-                            {
-                                foreach(var e in receiveTask.Exception.InnerExceptions)
-                                {
-                                    Console.WriteLine(e);
-                                }
-                            }
-                            ret = -3;
-                            break;
-                        }
-                        Thread.Sleep(10);
-                    }*/
+                    await xcmdoc.StartConnectionsAsync(cts.Token);
                 }
                 else
                 {
@@ -154,14 +96,6 @@ namespace xcmparser
             }
             cts?.Cancel();
             Console.WriteLine("Shutting down");
-            try
-            {
-                receiveTask?.Wait(1000);
-            }
-            catch(Exception)
-            {
-
-            }
             return ret;
         }
 

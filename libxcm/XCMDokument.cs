@@ -2,23 +2,24 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace libxcm
 {
     public class XCMDokument
     {
-        private List<Symbol> symbols = new List<Symbol>();
-        private Dictionary<string, XCMTokenizer> tokenizers = new Dictionary<string, XCMTokenizer>();
+        private readonly List<Symbol> symbols = new ();
+        private readonly Dictionary<string, XCMTokenizer> tokenizers = new ();
 
-        private Dictionary<string, Connection> incommingConnections = new Dictionary<string, Connection>();
-        private Dictionary<string, Connection> outgoingConnections = new Dictionary<string, Connection>();
-        public XCMDokument(XmlDocument doc, ITokenizerFactory factory, CancellationTokenSource cts) : this(doc.DocumentElement, factory, cts)
+        private readonly Dictionary<string, Connection> incommingConnections = new();
+        private readonly Dictionary<string, Connection> outgoingConnections = new();
+        public XCMDokument(XmlDocument doc, ITokenizerFactory factory) : this(doc.DocumentElement, factory)
         {
 
         }
 
-        public XCMDokument(XmlElement root, ITokenizerFactory factory, CancellationTokenSource cts)
+        public XCMDokument(XmlElement root, ITokenizerFactory factory)
         {
             foreach (XmlElement incon in root.SelectNodes("/spacesystem/connections/incomming/connection")) //Read all incomming connections and generate connection elements from it
             {
@@ -31,7 +32,7 @@ namespace libxcm
                 {
                     throw new ArgumentException("Each connection element must have a unique name");
                 }
-                var connection = new Connection(incon, cts.Token);
+                var connection = new Connection(incon);
                 incommingConnections.Add(connName, connection);
             }
 
@@ -46,7 +47,7 @@ namespace libxcm
                 {
                     throw new ArgumentException("Each connection element must have a unique name");
                 }
-                var connection = new Connection(outcon, cts.Token, true);
+                var connection = new Connection(outcon, true);
                 outgoingConnections.Add(connName, connection);
             }
 
@@ -64,6 +65,21 @@ namespace libxcm
                 tokenizer.Name = systemname;
                 tokenizers.Add(systemname, tokenizer);
             }
+        }
+
+        public async Task StartConnectionsAsync(CancellationToken token)
+        {
+            List<Task> tasks = new();
+            foreach(var connection in incommingConnections.Values)
+            {
+                tasks.Add(connection.StartStreamAsync(token));
+            }
+            foreach (var connection in outgoingConnections.Values)
+            {
+                tasks.Add(connection.StartStreamAsync(token));
+            }
+
+            await Task.WhenAll(tasks);
         }
 
         public IEnumerable<XCMTokenizer> GetTokenizers()

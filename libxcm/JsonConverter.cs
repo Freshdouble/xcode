@@ -83,14 +83,14 @@ namespace xcmparser
             string name = string.Empty;
             additionalData = null;
             var output = ConvertDataToJSONByte(msg, ref name);
-            if(!string.IsNullOrWhiteSpace(name))
+            if (!string.IsNullOrWhiteSpace(name))
             {
                 additionalData = name;
             }
             return output;
         }
 
-        public static void GetDataFromJson(IEnumerable<byte>data, Command com)
+        public static void GetDataFromJson(IEnumerable<byte> data, Command com)
         {
             GetDataFromJson(data as byte[] ?? data.ToArray(), com);
         }
@@ -105,6 +105,16 @@ namespace xcmparser
         {
             var jsoncommand = JsonSerializer.Deserialize<JsonCommand>(json);
             jsoncommand?.FillCommand(com);
+        }
+
+        public void SendConvertedMessage(libconnection.StreamPipe pipe, Message msg)
+        {
+            var data = ConvertToByteArray(msg, out object additionalData);
+            var convertedMsg = new libconnection.Message(data)
+            {
+                CustomObject = additionalData
+            };
+            pipe.TransmitMessage(convertedMsg);
         }
     }
 }

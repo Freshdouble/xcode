@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Xml;
 
@@ -21,8 +22,9 @@ namespace libxcm
             {
                 if(stage.NodeType != XmlNodeType.Comment)
                 {
-                    if(stage.Name.ToLower() == "stage")
+                    switch(stage.Name.ToLower())
                     {
+                        case "stage":
                         string className = "";
                         Dictionary<string, string> parameters = new ();
                         foreach (XmlNode parameter in stage)
@@ -54,28 +56,40 @@ namespace libxcm
                             throw new ArgumentException($"There is no connection class with the name {className}");
 
                         Add(datastream);
+                        break;
+
+                        case "converter":
+                            MessageConverter = GetConverterFromName(stage.InnerText);
+                        break;
                     }
                 }
             }
         }
 
-        public IMessageConverter MessageConverter { get; set; } = new xcmparser.JsonConverter();
-
-        public void TransmitData(Message msg)
+        public static IMessageConverter GetConverterFromName(string name)
         {
-            var data = MessageConverter.ConvertToByteArray(msg, out object additionalData);
-            var convertedMsg = new libconnection.Message(data)
+            switch(name.ToLower())
             {
-                CustomObject = additionalData
-            };
-            TransmitMessage(convertedMsg);
+                case "json":
+                    return new xcmparser.JsonConverter();
+                case "mqttjson":
+                    return new xcmparser.MqttJsonConverter();
+            }
+            throw new ArgumentException($"No message converter with name {name} is available");
         }
 
-        public void TransmitDataSynchronized(Message msg)
+        public IMessageConverter MessageConverter { get; set; } = new xcmparser.JsonConverter();
+
+        public void TransmitParsedData(Message msg)
+        {
+            MessageConverter.SendConvertedMessage(this, msg);
+        }
+
+        public void TransmitParsedDataSynchronized(Message msg)
         {
             lock(_lock)
             {
-                TransmitData(msg);
+                TransmitParsedData(msg);
             }
         }
     }

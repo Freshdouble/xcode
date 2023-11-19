@@ -71,7 +71,7 @@ namespace libxcmparse.DataObjects
                 }
             }
             Received?.Invoke(this, new EventArgs());
-            outbound.TransmitData(this);
+            outbound.TransmitParsedData(this);
         }
 
         public bool CheckValidity()

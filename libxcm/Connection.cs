@@ -74,6 +74,8 @@ namespace libxcm
                     return new xcmparser.JsonConverter();
                 case "mqttjson":
                     return new xcmparser.MqttJsonConverter();
+                case "csv":
+                    return new xcmparser.CsvConverter();
             }
             throw new ArgumentException($"No message converter with name {name} is available");
         }
